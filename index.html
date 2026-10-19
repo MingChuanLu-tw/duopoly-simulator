@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>台大 P11323026 經濟所碩專三 呂明權 雙頭寡占競爭模擬器 index.html</title>
+<!-- KaTeX 與 Plotly 由程式以鎖定版本從 cdn.jsdelivr.net 動態載入（見 CDN 常數），失敗時自動改用備援顯示 -->
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2328; --muted: #656d76; --line: #d0d7de;
+    --pass: #1a7f37; --pass-bg: #dafbe1; --fail: #cf222e; --fail-bg: #ffebe9;
+    --head: #f6f8fa; --card: #ffffff; --grid: #e6e9ed;
+    --f1: #2563eb; --f2: #e8740c; --eq: #1f2328;
+    --cs: #0f9d8a; --ps: #8b5cf6; --sw: #57606a;
+    --accent: #2563eb; --accent-bg: #e8f0fe; --accent-fg: #1d4ed8;
+    --warn-bg: #fff8c5; --warn-fg: #5c4400; --warn-line: #e3c75a;
+    --track: #d8dee4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --fg: #e6edf3; --muted: #8d96a0; --line: #30363d;
+      --pass: #3fb950; --pass-bg: #12261e; --fail: #f85149; --fail-bg: #2d1214;
+      --head: #161b22; --card: #0d1117; --grid: #262c34;
+      --f1: #60a5fa; --f2: #fb923c; --eq: #e6edf3;
+      --cs: #2dd4bf; --ps: #a78bfa; --sw: #9aa4af;
+      --accent: #60a5fa; --accent-bg: #132a4a; --accent-fg: #93c5fd;
+      --warn-bg: #3a2f00; --warn-fg: #f2d675; --warn-line: #6b5800;
+      --track: #3a414a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 28px 0 8px; }
+  .muted { color: var(--muted); }
+  .summary { margin: 12px 0; padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 16px; }
+  .summary.ok { background: var(--pass-bg); color: var(--pass); }
+  .summary.bad { background: var(--fail-bg); color: var(--fail); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--head); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-weight: 600; font-size: 12px; }
+  .tag.pass { background: var(--pass-bg); color: var(--pass); }
+  .tag.fail { background: var(--fail-bg); color: var(--fail); }
+  .chk { white-space: nowrap; }
+  .chk.fail { color: var(--fail); font-weight: 600; }
+  code { background: var(--head); padding: 1px 4px; border-radius: 4px; }
+  a { color: inherit; }
+
+  /* ===== App（Phase 2 靜態介面）===== */
+  main.app { max-width: 1320px; }
+  .app .en { color: var(--muted); font-size: 0.85em; font-weight: 400; }
+  .app-header {
+    display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between;
+    padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .app-header h1 { font-size: 22px; margin: 0; }
+  .app-header .sub { color: var(--muted); font-size: 13px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .presets .lbl { font-size: 12px; color: var(--muted); font-weight: 600; margin-right: 2px; }
+  .btn {
+    font: inherit; font-size: 13px; padding: 6px 10px; min-height: 36px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .btn:focus-visible, .seg button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cdn-banner {
+    margin: 12px 0 0; padding: 10px 14px; border-radius: 8px; font-size: 13px;
+    background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line);
+  }
+  .layout {
+    display: grid; gap: 16px; margin-top: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "controls" "main" "theory";
+  }
+  @media (min-width: 1024px) {
+    .layout { grid-template-columns: 290px minmax(0, 1fr); grid-template-areas: "controls main" "theory theory"; }
+  }
+  .controls { grid-area: controls; align-self: start; }
+  .main { grid-area: main; display: grid; gap: 16px; min-width: 0; }
+  .theory { grid-area: theory; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--card); min-width: 0; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; }
+  .row1 { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 768px) { .row1 { grid-template-columns: minmax(0, 1.7fr) minmax(220px, 1fr); } }
+
+  .controls-toggle { display: none; }
+  @media (max-width: 767px) {
+    .controls-toggle {
+      display: flex; width: 100%; justify-content: space-between; align-items: center;
+      font: inherit; font-weight: 600; font-size: 14px; background: none; border: 0; color: var(--fg);
+      padding: 0 0 10px; cursor: pointer;
+    }
+    .controls.collapsed .controls-body { display: none; }
+    .controls.collapsed .controls-toggle { padding-bottom: 0; }
+  }
+  .ctl-group { margin-bottom: 16px; }
+  .ctl-label { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: var(--head); padding: 4px; border-radius: 10px; }
+  .seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .seg button {
+    font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--fg);
+    padding: 7px 4px; border-radius: 7px; cursor: pointer; line-height: 1.25; min-height: 42px;
+  }
+  .seg button small { display: block; font-size: 11px; color: var(--muted); }
+  .seg button[aria-selected="true"], .seg button[aria-pressed="true"] {
+    background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent-fg); font-weight: 600;
+  }
+  .param { margin-bottom: 12px; }
+  .param[hidden] { display: none; }
+  .param-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .param-head label { font-size: 13px; flex: 1; min-width: 0; }
+  .sym { font-family: "Times New Roman", "Cambria Math", serif; font-style: italic; font-size: 15px; }
+  .param input[type=number] {
+    width: 84px; flex: none; font: inherit; font-size: 14px; padding: 4px 6px; text-align: right;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .param input[type=number].invalid { border-color: var(--fail); box-shadow: 0 0 0 3px var(--fail-bg); }
+  /* 滑桿：所有參數同一種淺灰軌道，已選取段落用參數顏色（廠商 1 藍、廠商 2 橘） */
+  .param { --thumb: var(--accent); }
+  .param.firm1 { --thumb: var(--f1); }
+  .param.firm2 { --thumb: var(--f2); }
+  .param input[type=range] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 26px; margin: 6px 0 0;
+    background: transparent; cursor: pointer; --pct: 50%;
+  }
+  .param input[type=range]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--thumb) 0 var(--pct), var(--track) var(--pct) 100%);
+  }
+  .param input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%;
+    background: var(--thumb); border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--thumb);
+  }
+  .param input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--track); }
+  .param input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--thumb); }
+  .param input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: var(--thumb); border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--thumb);
+  }
+  .range-hint { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+  .dot.f1 { background: var(--f1); } .dot.f2 { background: var(--f2); }
+  .hint { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+
+  .chart { width: 100%; height: 400px; }
+  @media (max-width: 767px) { .chart { height: 440px; } }
+  .chart.bars { height: 300px; }
+  .chart.bars.tall { height: 400px; }
+  @media (max-width: 767px) { .chart.bars.tall { height: 340px; } }
+  .card-head { display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-head h2 { margin: 0; }
+  .btn.small { font-size: 12px; min-height: 32px; padding: 4px 10px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .seg button .dot { vertical-align: 1px; }
+  .note { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+  .corner-banner {
+    background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-fg);
+    border-radius: 8px; padding: 8px 10px; font-size: 13px; margin-bottom: 10px;
+  }
+  .corner-banner .en-line { display: block; font-size: 12px; opacity: .9; margin-top: 2px; }
+  .res-list { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin: 0; }
+  .res-list dt, .res-list dd { padding: 6px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .res-list dt { font-size: 13px; }
+  .res-list dd { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-left: 8px; }
+  .res-list .exited { color: var(--muted); opacity: .55; filter: grayscale(1); font-weight: 400; }
+  .res-list .group-top { border-top: 2px solid var(--line); }
+
+  .cmp-head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cmp-head h2 { margin: 0; }
+  .cmp-toggle { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 6px; }
+  .cmp-wrap { position: relative; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .cmp tbody th { font-weight: 400; background: var(--card); }
+  .cmp thead th:first-child { left: 0; z-index: 2; }
+  .cmp th:first-child { position: sticky; left: 0; z-index: 1; background: var(--head); box-shadow: 1px 0 0 var(--line); }
+  .cmp tbody th:first-child { background: var(--card); }
+  .cmp td, .cmp thead th:not(:first-child) { scroll-snap-align: start; min-width: 92px; }
+  .m-short { display: none; }
+  .scroll-hint { display: none; margin: 0 0 6px; }
+  @media (max-width: 767px) {
+    .m-full { display: none; }
+    .m-short { display: inline; }
+    .scroll-hint { display: block; }
+    .cmp { table-layout: fixed; }
+    .cmp th:first-child { width: 72px; min-width: 72px; max-width: 72px; }
+    .cmp td, .cmp thead th:not(:first-child) { width: var(--colw, 86px); min-width: var(--colw, 86px); max-width: var(--colw, 86px); }
+  }
+  .cmp td { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cmp th { text-align: right; white-space: nowrap; vertical-align: bottom; }
+  .cmp th:first-child, .cmp td:first-child { text-align: left; white-space: nowrap; min-width: 112px; }
+  .cmp th.current, .cmp td.current { background: var(--accent-bg); }
+  .cmp th.current { color: var(--accent-fg); }
+  .cmp th.bench { color: var(--muted); }
+  .cmp td.zero { color: var(--muted); opacity: .6; }
+  .cmp small { font-weight: 400; color: var(--muted); }
+
+  .theory details > summary { font-weight: 600; font-size: 15px; cursor: pointer; }
+  .theory-grid { display: grid; gap: 8px 32px; grid-template-columns: minmax(0, 1fr); margin-top: 8px; }
+  @media (min-width: 1024px) { .theory-grid { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } }
+  .theory h3 { font-size: 15px; margin: 12px 0 6px; }
+  .theory p, .theory li { font-size: 14px; }
+  .theory ul { padding-left: 20px; margin: 6px 0; }
+  .formula { overflow-x: auto; overflow-y: hidden; padding: 4px 0 8px; border-bottom: 1px dashed var(--line); }
+  .formula .cap { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .formula .plain { font-family: "Cambria Math", "Times New Roman", serif; font-size: 16px; padding: 6px 0; white-space: normal; overflow-wrap: anywhere; }
+  .formula .katex-display { margin: 0.4em 0; }
+  .subst { margin: 6px 0 4px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--accent-bg); border-radius: 0 8px 8px 0; overflow-x: auto; }
+  .subst .cap { font-size: 12px; color: var(--accent-fg); font-weight: 600; }
+  .subst .katex-display { margin: 0.25em 0; }
+  .subst .katex-display > .katex { text-align: left; }
+  .subst .plain { font-family: "Cambria Math", "Times New Roman", serif; font-size: 15px; padding: 3px 0; overflow-wrap: anywhere; }
+  .subst-note { font-size: 12px; color: var(--warn-fg); background: var(--warn-bg); border-radius: 6px; padding: 2px 8px; display: inline-block; margin: 0 0 4px; }
+
+  /* ===== 動畫教學 Lessons ===== */
+  .ls-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ls-h { font-size: 15px; margin: 4px 0 2px; }
+  .ls-intro { margin: 0 0 10px; font-size: 13px; }
+  .ls-controls { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 6px 0; }
+  .ls-controls:empty { display: none; }
+  .ls-lbl { font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 6px; }
+  .ls-select { font: inherit; font-size: 13px; padding: 5px 6px; min-height: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .ls-scrub { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; }
+  .ls-scrub input { flex: 1; min-width: 0; }
+  .ls-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .ls-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } .ls-grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .ls-chart svg { width: 100%; height: auto; display: block; max-height: 420px; }
+  .ls-chart svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  .ls-chart svg text.axl { font-size: 12px; fill: var(--fg); }
+  .ls-chart svg text.lab { fill: var(--fg); font-size: 11.5px; }
+  .ls-chart svg text.strong { font-weight: 700; }
+  .ls-chart svg text.f1t { fill: var(--f1); font-weight: 600; } .ls-chart svg text.f2t { fill: var(--f2); font-weight: 600; }
+  .ls-chart svg .gl { stroke: var(--grid); stroke-width: 1; }
+  .ls-chart svg .ln { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  .ls-chart svg .ln.f1 { stroke: var(--f1); } .ls-chart svg .ln.f2 { stroke: var(--f2); }
+  .ls-chart svg .ln.dash { stroke-dasharray: 6 4; stroke-width: 2; }
+  .ls-chart svg .ln.ref { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .ls-chart svg .ln.path { stroke: var(--eq); stroke-width: 1.8; }
+  .ls-chart svg .ln.commit { stroke-width: 1.8; stroke-dasharray: 3 3; opacity: .8; }
+  .ls-chart svg .pt { fill: var(--eq); }
+  .ls-chart svg .start { fill: var(--bg); stroke: var(--eq); stroke-width: 2; }
+  .ls-chart svg .nash { fill: none; stroke: var(--eq); stroke-width: 2; stroke-dasharray: 3 2; }
+  .ls-chart svg .star { fill: #f5b301; stroke: var(--eq); stroke-width: 1.4; }
+  .ls-chart svg .now { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+  .ls-chart svg .now.f1d { fill: var(--f1); } .ls-chart svg .now.f2d { fill: var(--f2); }
+  .ls-say { font-size: 14px; margin: 4px 0 8px; min-height: 3em; }
+  .ls-table { font-size: 12px; margin-top: 6px; }
+  .ls-table th, .ls-table td { padding: 4px 6px; text-align: right; }
+  .ls-table td:first-child, .ls-table th:first-child { text-align: left; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+"use strict";
+
+/* =====================================================================
+ * Econ — 計算核心 Calculation core（純函數 pure functions，不碰 DOM）
+ *
+ * 需求 Inverse demand:  P1 = a − b·q1 − γ·q2,  P2 = a − b·q2 − γ·q1,  γ = θ·b
+ * θ = 1 為同質產品 Homogeneous；0 ≤ θ < 1 為差異化 Differentiated。
+ *
+ * 每個模型函數輸入 {a, b, c1, c2, theta, leader}，回傳
+ * {p1, p2, q1, q2, pi1, pi2, cs, sw, dwl, lerner:{l1,l2}, hhi, corner}
+ * corner 為 null 或 {type, firm, computed, msgZh, msgEn}。
+ * 同質模型中 p1 = p2 = 市場價格 Market price。
+ * ===================================================================== */
+const Econ = (() => {
+  const HOMO_EPS = 1e-6;   // θ ≥ 1 − HOMO_EPS 視為同質
+  const NOISE = 1e-9;      // 浮點雜訊門檻
+
+  const fin = x => (Number.isFinite(x) ? x : 0);
+  const pos = x => (Number.isFinite(x) && x > 0 ? x : 0);
+  const nz = x => (Math.abs(x) < NOISE ? 0 : x);   // 去除 −0 與浮點雜訊
+
+  /* ---------- 參數正規化 Parameter normalization ---------- */
+  function normalize(input = {}) {
+    const a = Math.max(pos(Number(input.a)), 1e-9);
+    const b = Math.max(pos(Number(input.b)), 1e-9);
+    const c1 = Math.min(pos(Number(input.c1)), a);
+    const c2 = Math.min(pos(Number(input.c2)), a);
+    const rawTheta = input.theta === undefined ? 1 : Number(input.theta);
+    const theta = Math.min(Math.max(fin(rawTheta), 0), 1);
+    const homo = theta >= 1 - HOMO_EPS;
+    const g = homo ? b : theta * b;
+    const leader = Number(input.leader) === 2 ? 2 : 1;
+    return { a, b, c1, c2, theta: homo ? 1 : theta, g, homo, leader };
+  }
+
+  const costOf = (par, i) => (i === 1 ? par.c1 : par.c2);
+
+  /* ---------- 角解訊息 Corner messages ---------- */
+  const corners = {
+    exit: firm => ({
+      type: "exit", firm, computed: true,
+      msgZh: `廠商 ${firm} 成本過高，產量為 0（退出市場）`,
+      msgEn: `Firm ${firm} exits: its cost is too high to produce.`
+    }),
+    undercut: firm => ({
+      type: "undercut", firm, computed: true,
+      msgZh: `廠商 ${firm} 以略低於對手成本的價格（ε → 0）拿下整個市場`,
+      msgEn: `Firm ${firm} undercuts at the rival's cost (ε → 0) and takes the whole market.`
+    }),
+    monopolyPrice: firm => ({
+      type: "monopoly-price", firm, computed: true,
+      msgZh: `對手成本高於廠商 ${firm} 的獨占價，廠商 ${firm} 直接訂獨占價`,
+      msgEn: `Rival's cost exceeds Firm ${firm}'s monopoly price, so Firm ${firm} charges it.`
+    }),
+    limitPricing: firm => ({
+      type: "limit-pricing", firm, computed: false,
+      msgZh: "此參數組合屬於限制性定價 Limit pricing 區間，本模擬器不計算，請調整 c 或 θ",
+      msgEn: "These parameters fall in the limit-pricing region, which is not computed. Adjust c or θ."
+    }),
+    followerExit: (leader, follower) => ({
+      type: "follower-exit", firm: follower, computed: true,
+      msgZh: `領導者（廠商 ${leader}）產量足以讓追隨者（廠商 ${follower}）退出：嚇阻進入 Entry deterrence`,
+      msgEn: `Leader (Firm ${leader}) produces enough to keep the follower (Firm ${follower}) out: entry deterrence.`
+    }),
+    leaderExit: (leader, follower) => ({
+      type: "leader-exit", firm: leader, computed: true,
+      msgZh: `領導者（廠商 ${leader}）成本過高，產量為 0，由追隨者（廠商 ${follower}）獨占`,
+      msgEn: `Leader (Firm ${leader}) is too costly to produce; the follower (Firm ${follower}) is a monopolist.`
+    }),
+    noOutput: () => ({
+      type: "no-output", firm: null, computed: true,
+      msgZh: "兩家成本都不低於需求截距 a，市場沒有交易",
+      msgEn: "Both costs are at or above the demand intercept a; nothing is traded."
+    })
+  };
+
+  /* ---------- 福利與指標 Welfare & metrics ---------- */
+  function consumerSurplus(par, q1, q2) {
+    const { b, g } = par;
+    return 0.5 * (b * q1 * q1 + 2 * g * q1 * q2 + b * q2 * q2);
+  }
+
+  function pack(par, q1, q2, p1, p2, corner, swPC) {
+    q1 = nz(pos(q1)); q2 = nz(pos(q2));
+    p1 = nz(pos(p1)); p2 = nz(pos(p2));
+    const pi1 = q1 > 0 ? nz((p1 - par.c1) * q1) : 0;
+    const pi2 = q2 > 0 ? nz((p2 - par.c2) * q2) : 0;
+    const cs = nz(consumerSurplus(par, q1, q2));
+    const sw = nz(cs + pi1 + pi2);
+    const dwl = swPC === undefined ? 0 : nz(swPC - sw);
+    const l1 = q1 > 0 && p1 > 0 ? nz((p1 - par.c1) / p1) : 0;
+    const l2 = q2 > 0 && p2 > 0 ? nz((p2 - par.c2) / p2) : 0;
+    const Q = q1 + q2;
+    const hhi = Q > 0 ? nz(10000 * ((q1 / Q) ** 2 + (q2 / Q) ** 2)) : 0;
+    return { p1, p2, q1, q2, pi1, pi2, cs, sw, dwl, lerner: { l1, l2 }, hhi, corner: corner || null };
+  }
+
+  const inverseP = (par, qi, qj) => par.a - par.b * qi - par.g * qj;
+  const directQ = (par, pi, pj) => {
+    const { a, b, g } = par;
+    return (a * (b - g) - b * pi + g * pj) / (b * b - g * g);
+  };
+
+  /* ---------- 完全競爭 Perfect competition（P = MC） ---------- */
+  function pcRaw(par) {
+    const { a, b, c1, c2 } = par;
+    if (par.homo) {
+      const cL = Math.min(c1, c2);
+      const Q = pos((a - cL) / b);
+      if (Q === 0) return { q1: 0, q2: 0, p1: cL, p2: cL, corner: corners.noOutput() };
+      if (Math.abs(c1 - c2) < NOISE) return { q1: Q / 2, q2: Q / 2, p1: cL, p2: cL, corner: null };
+      const low = c1 < c2 ? 1 : 2;
+      return low === 1
+        ? { q1: Q, q2: 0, p1: cL, p2: cL, corner: corners.exit(2) }
+        : { q1: 0, q2: Q, p1: cL, p2: cL, corner: corners.exit(1) };
+    }
+    let q1 = directQ(par, c1, c2), q2 = directQ(par, c2, c1);
+    let corner = null;
+    if (q1 <= 0 && q2 <= 0) return { q1: 0, q2: 0, p1: c1, p2: c2, corner: corners.noOutput() };
+    if (q2 <= 0) { q2 = 0; q1 = pos((a - c1) / b); corner = corners.exit(2); }
+    else if (q1 <= 0) { q1 = 0; q2 = pos((a - c2) / b); corner = corners.exit(1); }
+    return { q1, q2, p1: c1, p2: c2, corner };
+  }
+
+  function swPerfectCompetition(par) {
+    const r = pcRaw(par);
+    return pack(par, r.q1, r.q2, r.p1, r.p2, r.corner).sw;
+  }
+
+  function perfectCompetition(input) {
+    const par = normalize(input);
+    const r = pcRaw(par);
+    const out = pack(par, r.q1, r.q2, r.p1, r.p2, r.corner);
+    out.dwl = 0;
+    return out;
+  }
+
+  /* ---------- 獨占 Monopoly（聯合利潤最大 Joint profit max） ---------- */
+  function monopoly(input) {
+    const par = normalize(input);
+    const { a, b, g, c1, c2 } = par;
+    const swPC = swPerfectCompetition(par);
+    if (par.homo) {
+      const cL = Math.min(c1, c2);
+      const Q = pos((a - cL) / (2 * b));
+      const P = (a + cL) / 2;
+      if (Q === 0) return pack(par, 0, 0, P, P, corners.noOutput(), swPC);
+      if (Math.abs(c1 - c2) < NOISE) return pack(par, Q / 2, Q / 2, P, P, null, swPC);
+      return c1 < c2
+        ? pack(par, Q, 0, P, P, corners.exit(2), swPC)
+        : pack(par, 0, Q, P, P, corners.exit(1), swPC);
+    }
+    const D = b * b - g * g;
+    let q1 = (b * (a - c1) - g * (a - c2)) / (2 * D);
+    let q2 = (b * (a - c2) - g * (a - c1)) / (2 * D);
+    let corner = null;
+    if (q1 <= 0 && q2 <= 0) { q1 = 0; q2 = 0; corner = corners.noOutput(); }
+    else if (q2 <= 0) { q2 = 0; q1 = pos((a - c1) / (2 * b)); corner = corners.exit(2); }
+    else if (q1 <= 0) { q1 = 0; q2 = pos((a - c2) / (2 * b)); corner = corners.exit(1); }
+    return pack(par, q1, q2, inverseP(par, q1, q2), inverseP(par, q2, q1), corner, swPC);
+  }
+
+  /* ---------- Cournot 數量競爭 ---------- */
+  function cournot(input) {
+    const par = normalize(input);
+    const { a, b, g, c1, c2 } = par;
+    const swPC = swPerfectCompetition(par);
+    const den = 4 * b * b - g * g;
+    let q1 = (2 * b * (a - c1) - g * (a - c2)) / den;
+    let q2 = (2 * b * (a - c2) - g * (a - c1)) / den;
+    let corner = null;
+    if (q1 <= 0 && q2 <= 0) { q1 = 0; q2 = 0; corner = corners.noOutput(); }
+    else if (q2 <= 0) { q2 = 0; q1 = pos((a - c1) / (2 * b)); corner = corners.exit(2); }
+    else if (q1 <= 0) { q1 = 0; q2 = pos((a - c2) / (2 * b)); corner = corners.exit(1); }
+    return pack(par, q1, q2, inverseP(par, q1, q2), inverseP(par, q2, q1), corner, swPC);
+  }
+
+  /* ---------- Bertrand 價格競爭 ---------- */
+  function bertrandHomo(par) {
+    const { a, b, c1, c2 } = par;
+    const swPC = swPerfectCompetition(par);
+    if (Math.abs(c1 - c2) < NOISE) {
+      const P = c1;
+      const Q = pos((a - P) / b);
+      return pack(par, Q / 2, Q / 2, P, P, Q === 0 ? corners.noOutput() : null, swPC);
+    }
+    const low = c1 < c2 ? 1 : 2;
+    const cL = Math.min(c1, c2), cH = Math.max(c1, c2);
+    const pm = (a + cL) / 2;
+    let P, corner;
+    if (cH < pm) { P = cH; corner = corners.undercut(low); }
+    else { P = pm; corner = corners.monopolyPrice(low); }
+    const Q = pos((a - P) / b);
+    return low === 1 ? pack(par, Q, 0, P, P, corner, swPC) : pack(par, 0, Q, P, P, corner, swPC);
+  }
+
+  function bertrandDiff(par) {
+    const { a, b, g, c1, c2 } = par;
+    const swPC = swPerfectCompetition(par);
+    const den = 4 * b * b - g * g;
+    const k1 = a * (b - g) + b * c1, k2 = a * (b - g) + b * c2;
+    const p1 = (2 * b * k1 + g * k2) / den;
+    const p2 = (2 * b * k2 + g * k1) / den;
+    const q1 = directQ(par, p1, p2), q2 = directQ(par, p2, p1);
+    if (q1 > 0 && q2 > 0) return pack(par, q1, q2, p1, p2, null, swPC);
+    if (q1 <= 0 && q2 <= 0) return pack(par, 0, 0, c1, c2, corners.noOutput(), swPC);
+
+    // 有一家內部解產量 ≤ 0：檢查另一家獨占是否成立
+    const i = q1 > 0 ? 1 : 2, j = 3 - i;
+    const ci = costOf(par, i), cj = costOf(par, j);
+    const qm = pos((a - ci) / (2 * b));
+    const pm = (a + ci) / 2;
+    const choke = a - g * qm;               // 廠商 j 的需求截距（給定 q_i = qm）
+    if (choke <= cj) {
+      return i === 1
+        ? pack(par, qm, 0, pm, choke, corners.exit(2), swPC)
+        : pack(par, 0, qm, choke, pm, corners.exit(1), swPC);
+    }
+    // Limit pricing 區間：依規格 v1 不計算，回傳全 0 並標示 computed = false
+    const out = pack(par, 0, 0, 0, 0, corners.limitPricing(j));
+    return out;
+  }
+
+  function bertrand(input) {
+    const par = normalize(input);
+    return par.homo ? bertrandHomo(par) : bertrandDiff(par);
+  }
+
+  /* ---------- Stackelberg 數量領導 ---------- */
+  function stackelbergSetup(par) {
+    const { a, b, g } = par;
+    const L = par.leader, F = 3 - L;
+    const cL = costOf(par, L), cF = costOf(par, F);
+    const RF = qL => Math.max(0, (a - cF - g * qL) / (2 * b));
+    const profitL = qL => (a - b * qL - g * RF(qL) - cL) * qL;
+    const qMax = pos((a - cL) / b);
+    return { L, F, cL, cF, RF, profitL, qMax };
+  }
+
+  // 數值解：2,000 格點＋黃金分割細化 Grid + golden-section refinement
+  function stackelbergNumeric(input) {
+    const par = normalize(input);
+    const { profitL, qMax } = stackelbergSetup(par);
+    if (qMax === 0) return 0;
+    const N = 2000;
+    let best = 0, bestV = profitL(0);
+    for (let k = 1; k <= N; k++) {
+      const x = (qMax * k) / N, v = profitL(x);
+      if (v > bestV) { bestV = v; best = x; }
+    }
+    let lo = Math.max(0, best - qMax / N), hi = Math.min(qMax, best + qMax / N);
+    const r = (Math.sqrt(5) - 1) / 2;
+    let x1 = hi - r * (hi - lo), x2 = lo + r * (hi - lo);
+    let f1 = profitL(x1), f2 = profitL(x2);
+    for (let it = 0; it < 80; it++) {
+      if (f1 < f2) { lo = x1; x1 = x2; f1 = f2; x2 = lo + r * (hi - lo); f2 = profitL(x2); }
+      else { hi = x2; x2 = x1; f2 = f1; x1 = hi - r * (hi - lo); f1 = profitL(x1); }
+    }
+    const xm = (lo + hi) / 2;
+    return profitL(xm) >= bestV ? xm : best;
+  }
+
+  // 封閉解（含兩種角解）Closed form, piecewise
+  function stackelbergAnalytic(par) {
+    const { a, b, g } = par;
+    const { cL, cF, qMax } = stackelbergSetup(par);
+    const qA = (2 * b * (a - cL) - g * (a - cF)) / (2 * (2 * b * b - g * g));
+    const kink = g > 0 ? (a - cF) / g : Infinity;     // q_L 超過此值時追隨者產量為 0
+    let q;
+    if (kink <= 0) q = pos((a - cL) / (2 * b));
+    else if (qA <= 0) q = 0;
+    else if (qA < kink) q = qA;
+    else q = Math.max(kink, (a - cL) / (2 * b));
+    return Math.min(pos(q), qMax);
+  }
+
+  function stackelberg(input) {
+    const par = normalize(input);
+    const swPC = swPerfectCompetition(par);
+    const { L, F, RF, profitL } = stackelbergSetup(par);
+    let qL = stackelbergAnalytic(par);
+    const qNum = stackelbergNumeric(par);
+    if (Math.abs(qNum - qL) > 0.01 && profitL(qNum) > profitL(qL)) qL = qNum;  // 規格：差距 > 0.01 採數值解
+    const qF = RF(qL);
+    let corner = null;
+    if (qL <= NOISE && qF <= NOISE) corner = corners.noOutput();
+    else if (qL <= NOISE) corner = corners.leaderExit(L, F);
+    else if (qF <= NOISE) corner = corners.followerExit(L, F);
+    const pL = inverseP(par, qL, qF), pF = inverseP(par, qF, qL);
+    return L === 1
+      ? pack(par, qL, qF, pL, pF, corner, swPC)
+      : pack(par, qF, qL, pF, pL, corner, swPC);
+  }
+
+  /* ---------- 反應函數 Best responses ---------- */
+  const reaction = {
+    // Cournot / Stackelberg 追隨者：數量空間
+    quantity(input, i, qj) {
+      const par = normalize(input);
+      return pos((par.a - costOf(par, i) - par.g * qj) / (2 * par.b));
+    },
+    // 差異化 Bertrand：價格空間
+    priceDiff(input, i, pj) {
+      const par = normalize(input);
+      const { a, b, g } = par;
+      const ci = costOf(par, i);
+      return Math.max(ci, (a * (b - g) + b * ci + g * pj) / (2 * b));
+    },
+    // 同質 Bertrand：分段折線（削價 step 預設 0.01 = ε）
+    priceHomo(input, i, pj, step = 0.01) {
+      const par = normalize(input);
+      const ci = costOf(par, i);
+      const pm = (par.a + ci) / 2;
+      if (pj > pm) return pm;
+      if (pj > ci) return Math.max(ci, pj - step);
+      return ci;
+    }
+  };
+
+  /* ---------- 動態調整 Best-response dynamics ---------- */
+  // x_i^{t+1} = x_i^t + λ (BR_i(x_j^t) − x_i^t)
+  function dynamics(model, input, opts = {}) {
+    const par = normalize(input);
+    const lambda = Math.min(Math.max(fin(opts.lambda ?? 1), 0.01), 1);
+    const mode = opts.mode === "sequential" ? "sequential" : "simultaneous";
+    const maxSteps = Math.max(1, Math.floor(fin(opts.maxSteps ?? 50)));
+    const tol = pos(opts.tol ?? 0.01) || 0.01;
+    let br;
+    if (model === "cournot") br = (i, xj) => reaction.quantity(par, i, xj);
+    else if (model === "bertrand" && !par.homo) br = (i, xj) => reaction.priceDiff(par, i, xj);
+    else if (model === "bertrand") br = (i, xj) => reaction.priceHomo(par, i, xj, 1); // 同質：每步削價 1 單位
+    else return { path: [], converged: false, steps: 0, applicable: false };
+
+    const start = Array.isArray(opts.start) ? opts.start : [0, 0];
+    let x1 = pos(Number(start[0])), x2 = pos(Number(start[1]));
+    const residual = () => Math.max(Math.abs(br(1, x2) - x1), Math.abs(br(2, x1) - x2));
+    const path = [{ t: 0, x1, x2 }];
+    let converged = residual() < tol, steps = 0;
+    for (let t = 1; t <= maxSteps && !converged; t++) {
+      let n1 = x1, n2 = x2;
+      if (mode === "simultaneous" || t % 2 === 1) n1 = x1 + lambda * (br(1, x2) - x1);
+      if (mode === "simultaneous" || t % 2 === 0) n2 = x2 + lambda * (br(2, x1) - x2);
+      x1 = nz(pos(n1)); x2 = nz(pos(n2));
+      path.push({ t, x1, x2 });
+      steps = t;
+      converged = residual() < tol;
+    }
+    return { path, converged, steps, applicable: true };
+  }
+
+  const solve = (model, input) => ({
+    cournot, bertrand, stackelberg,
+    perfectCompetition, monopoly
+  }[model] || cournot)(input);
+
+  return {
+    normalize, cournot, bertrand, stackelberg, perfectCompetition, monopoly,
+    solve, reaction, dynamics,
+    _stackelbergNumeric: stackelbergNumeric,
+    _stackelbergAnalytic: input => stackelbergAnalytic(normalize(input))
+  };
+})();
+
+/* =====================================================================
+ * Tests — 規格書第 9.1 節數值案例＋額外檢查（純函數，回傳結果物件）
+ * ===================================================================== */
+const Tests = (() => {
+  const TOL = 0.01;
+  const base = { a: 100, b: 1 };
+  const P = (c1, c2, theta = 1, leader = 1) => ({ ...base, c1, c2, theta, leader });
+
+  const field = (res, key) => {
+    if (key === "Q") return res.q1 + res.q2;
+    if (key === "piTotal") return res.pi1 + res.pi2;
+    if (key === "corner") return res.corner ? 1 : 0;
+    return res[key];
+  };
+
+  const LABELS = {
+    p1: "p1", p2: "p2", q1: "q1", q2: "q2", Q: "Q", pi1: "π1", pi2: "π2",
+    piTotal: "π1+π2", cs: "CS", sw: "SW", dwl: "DWL", corner: "角解 corner"
+  };
+
+  // 第 9.1 節：17 列，與規格書一致（預期值以精確分數表示）
+  const specCases = [
+    { id: "A", label: "A：c 10 / 10，同質", model: "Cournot",
+      run: () => Econ.cournot(P(10, 10)),
+      expect: { q1: 30, q2: 30, p1: 40, pi1: 900, pi2: 900, cs: 1800, sw: 3600, dwl: 450 } },
+    { id: "A", label: "A", model: "Bertrand 同質",
+      run: () => Econ.bertrand(P(10, 10)),
+      expect: { p1: 10, q1: 45, q2: 45, pi1: 0, pi2: 0, cs: 4050, sw: 4050 } },
+    { id: "A", label: "A", model: "Stackelberg（L = Firm 1）",
+      run: () => Econ.stackelberg(P(10, 10, 1, 1)),
+      expect: { q1: 45, q2: 22.5, p1: 32.5, pi1: 1012.5, pi2: 506.25, cs: 2278.125, sw: 3796.875 } },
+    { id: "A", label: "A", model: "完全競爭",
+      run: () => Econ.perfectCompetition(P(10, 10)),
+      expect: { p1: 10, Q: 90, sw: 4050 } },
+    { id: "A", label: "A", model: "獨占",
+      run: () => Econ.monopoly(P(10, 10)),
+      expect: { p1: 55, Q: 45, piTotal: 2025, cs: 1012.5, sw: 3037.5 } },
+    { id: "B", label: "B：c 10 / 25，同質", model: "Cournot",
+      run: () => Econ.cournot(P(10, 25)),
+      expect: { q1: 35, q2: 20, p1: 45, pi1: 1225, pi2: 400, cs: 1512.5, sw: 3137.5 } },
+    { id: "B", label: "B", model: "Bertrand 同質",
+      run: () => Econ.bertrand(P(10, 25)),
+      expect: { p1: 25, q1: 75, q2: 0, pi1: 1125, pi2: 0, cs: 2812.5, sw: 3937.5 } },
+    { id: "B", label: "B", model: "Stackelberg（L = Firm 1）",
+      run: () => Econ.stackelberg(P(10, 25, 1, 1)),
+      expect: { q1: 52.5, q2: 11.25, p1: 36.25, pi1: 1378.125, pi2: 126.5625, cs: 2032.03125, sw: 3536.71875 } },
+    { id: "B", label: "B", model: "Stackelberg（L = Firm 2）",
+      run: () => Econ.stackelberg(P(10, 25, 1, 2)),
+      expect: { q1: 30, q2: 30, p1: 40, pi1: 900, pi2: 450 } },
+    { id: "C", label: "C：c 10 / 60，同質", model: "Cournot",
+      run: () => Econ.cournot(P(10, 60)),
+      expect: { q1: 45, q2: 0, p1: 55, pi1: 2025, corner: 1 } },
+    { id: "C", label: "C", model: "Bertrand 同質",
+      run: () => Econ.bertrand(P(10, 60)),
+      expect: { p1: 55, q1: 45, q2: 0 } },
+    { id: "D", label: "D：c 10 / 10，θ 0.5", model: "Cournot",
+      run: () => Econ.cournot(P(10, 10, 0.5)),
+      expect: { q1: 36, q2: 36, p1: 46, pi1: 1296, pi2: 1296, cs: 1944, sw: 4536 } },
+    { id: "D", label: "D", model: "Bertrand 差異化",
+      run: () => Econ.bertrand(P(10, 10, 0.5)),
+      expect: { p1: 40, p2: 40, q1: 40, q2: 40, pi1: 1200, pi2: 1200, cs: 2400, sw: 4800 } },
+    { id: "D", label: "D", model: "Stackelberg（L = Firm 1）",
+      run: () => Econ.stackelberg(P(10, 10, 0.5, 1)),
+      expect: { q1: 270 / 7, q2: 495 / 14, p1: 43.75, p2: 635 / 14, pi1: 33.75 * 270 / 7, pi2: (495 / 14) ** 2 } },
+    { id: "D", label: "D", model: "完全競爭",
+      run: () => Econ.perfectCompetition(P(10, 10, 0.5)),
+      expect: { p1: 10, q1: 60, q2: 60, cs: 5400, sw: 5400 } },
+    { id: "D", label: "D", model: "獨占（聯合）",
+      run: () => Econ.monopoly(P(10, 10, 0.5)),
+      expect: { q1: 30, q2: 30, p1: 55, piTotal: 2700, cs: 1350, sw: 4050 } }
+  ];
+
+  function runSpecCase(c) {
+    let res, error = null;
+    try { res = c.run(); } catch (e) { error = e; }
+    const checks = Object.entries(c.expect).map(([key, expected]) => {
+      const actual = res ? field(res, key) : NaN;
+      return { key: LABELS[key] || key, expected, actual,
+               pass: Number.isFinite(actual) && Math.abs(actual - expected) <= TOL };
+    });
+    return { id: c.id, label: c.label, model: c.model, checks, error,
+             pass: !error && checks.every(k => k.pass) };
+  }
+
+  function runDynamicsCase() {
+    const d = Econ.dynamics("cournot", P(10, 10), { start: [0, 0], lambda: 1, mode: "simultaneous" });
+    const last = d.path[d.path.length - 1];
+    const err = Math.max(Math.abs(last.x1 - 30), Math.abs(last.x2 - 30));
+    const checks = [
+      { key: "收斂 converged", expected: 1, actual: d.converged ? 1 : 0, pass: d.converged },
+      { key: "步數 steps ≤ 15", expected: 15, actual: d.steps, pass: d.steps <= 15 },
+      { key: "誤差 |x − 30|", expected: 0, actual: err, pass: err < TOL }
+    ];
+    return { id: "動態", label: "動態：案例 A，起點 (0, 0)，同時、λ = 1", model: "Cournot",
+             checks, error: null, pass: checks.every(k => k.pass) };
+  }
+
+  /* ---- 額外 1：極端值與全參數掃描，不得出現 NaN / Infinity / 負值 ---- */
+  function numericFields(res) {
+    return [
+      ["p1", res.p1], ["p2", res.p2], ["q1", res.q1], ["q2", res.q2],
+      ["pi1", res.pi1], ["pi2", res.pi2], ["cs", res.cs], ["sw", res.sw],
+      ["dwl", res.dwl], ["lerner.l1", res.lerner.l1], ["lerner.l2", res.lerner.l2], ["hhi", res.hhi]
+    ];
+  }
+
+  function runSweep() {
+    const paramSets = [
+      { a: 10, b: 5, c1: 9.5, c2: 0 }, { a: 10, b: 5, c1: 0, c2: 9.5 },
+      { a: 10, b: 5, c1: 9.5, c2: 9.5 }, { a: 10, b: 5, c1: 0, c2: 0 },
+      { a: 10, b: 0.1, c1: 9.5, c2: 0 }, { a: 200, b: 0.1, c1: 0, c2: 199 },
+      { a: 100, b: 1, c1: 99, c2: 99 }, { a: 100, b: 1, c1: 100, c2: 100 },
+      { a: 100, b: 1, c1: 10, c2: 60 }, { a: 100, b: 1, c1: 45, c2: 10 }
+    ];
+    const thetas = [0, 0.25, 0.5, 0.95, 1];
+    const models = ["cournot", "bertrand", "stackelberg", "perfectCompetition", "monopoly"];
+    const rows = [];
+    for (const ps of paramSets) {
+      let runs = 0; const problems = [];
+      for (const theta of thetas) for (const leader of [1, 2]) for (const m of models) {
+        if (m !== "stackelberg" && leader === 2) continue;
+        runs++;
+        let res;
+        try { res = Econ.solve(m, { ...ps, theta, leader }); }
+        catch (e) { problems.push(`${m} θ=${theta}: ${e.message}`); continue; }
+        for (const [k, v] of numericFields(res)) {
+          if (!Number.isFinite(v)) problems.push(`${m} θ=${theta} L=${leader}: ${k} = ${v}`);
+          else if (v < 0) problems.push(`${m} θ=${theta} L=${leader}: ${k} = ${v.toFixed(4)} < 0`);
+        }
+      }
+      rows.push({
+        label: `a=${ps.a}, b=${ps.b}, c=${ps.c1} / ${ps.c2}`,
+        detail: problems.length ? problems.slice(0, 4).join("；") : `${runs} 次計算全部有限且非負`,
+        pass: problems.length === 0
+      });
+    }
+    return rows;
+  }
+
+  /* ---- 額外 2：Stackelberg 封閉解 vs 數值解 ---- */
+  function runStackelbergAgreement() {
+    let maxDiff = 0, count = 0, worst = "";
+    for (const theta of [0, 0.3, 0.5, 0.8, 0.95, 1])
+      for (const c1 of [0, 10, 40, 70, 95])
+        for (const c2 of [0, 10, 40, 70, 95])
+          for (const leader of [1, 2]) {
+            const inp = { a: 100, b: 1, c1, c2, theta, leader };
+            const d = Math.abs(Econ._stackelbergAnalytic(inp) - Econ._stackelbergNumeric(inp));
+            count++;
+            if (d > maxDiff) { maxDiff = d; worst = `θ=${theta}, c=${c1}/${c2}, L=${leader}`; }
+          }
+    return [{
+      label: `${count} 組參數（含角解）`,
+      detail: `最大差距 q_L = ${maxDiff.toExponential(2)}${worst ? `（${worst}）` : ""}`,
+      pass: maxDiff <= TOL
+    }];
+  }
+
+  /* ---- 額外 3：理論排序（案例 A） ---- */
+  function runOrdering() {
+    const p = P(10, 10);
+    const sw = {
+      pc: Econ.perfectCompetition(p).sw, b: Econ.bertrand(p).sw, s: Econ.stackelberg(p).sw,
+      c: Econ.cournot(p).sw, m: Econ.monopoly(p).sw
+    };
+    const okSW = Math.abs(sw.pc - sw.b) <= TOL && sw.b > sw.s && sw.s > sw.c && sw.c > sw.m;
+    const d = P(10, 10, 0.5);
+    const okDiff = Econ.bertrand(d).p1 < Econ.cournot(d).p1 && Econ.bertrand(d).sw > Econ.cournot(d).sw;
+    const sA = Econ.stackelberg(p), cA = Econ.cournot(p);
+    const okFirstMover = sA.pi1 > cA.pi1 && sA.pi2 < cA.pi2;
+    return [
+      { label: "案例 A 社會福利：PC = Bertrand > Stackelberg > Cournot > 獨占",
+        detail: `${sw.pc} = ${sw.b} > ${sw.s} > ${sw.c} > ${sw.m}`, pass: okSW },
+      { label: "案例 D：Bertrand 價格低於 Cournot、福利較高", detail: "Singh & Vives (1984)", pass: okDiff },
+      { label: "先行者優勢：π_L > π_Cournot > π_F", detail: `${sA.pi1} > ${cA.pi1} > ${sA.pi2}`, pass: okFirstMover }
+    ];
+  }
+
+  function run() {
+    const spec = specCases.map(runSpecCase);
+    spec.push(runDynamicsCase());
+    const sweep = runSweep();
+    const agree = runStackelbergAgreement();
+    const order = runOrdering();
+    const all = [...spec, ...sweep, ...agree, ...order];
+    return {
+      spec, sweep, agree, order,
+      specPassed: spec.filter(r => r.pass).length, specTotal: spec.length,
+      passed: all.filter(r => r.pass).length, total: all.length
+    };
+  }
+
+  return { run, TOL };
+})();
+
+/* =====================================================================
+ * Subst — F12 公式代入目前數值（純函數，不碰 DOM）
+ * 每一項回傳 {text, tex, value, actual, note}：
+ *   text  純文字算式，例如 q₁* = (100 − 2·10 + 10)/(3·1) = 30.00
+ *   tex   同一算式的 KaTeX 版本
+ *   value 公式（內部解）算出的值；actual 為 Econ 實際採用的值（角解時兩者不同）
+ * ===================================================================== */
+const Subst = (() => {
+  const num = v => { const r = Math.round(v * 1000) / 1000; return String(r === 0 ? 0 : r); };
+  const f2 = v => (Math.abs(v) < 0.005 ? 0 : v)
+    .toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace("-", "−");
+  const SUB = { "₁": "_{1}", "₂": "_{2}" };
+  // 純文字 → TeX（只處理本模組會用到的符號）
+  const tx = s => String(s)
+    .replace(/,/g, "{,}")
+    .replace(/[₁₂]/g, ch => SUB[ch])
+    .replace(/\*/g, "^{*}")
+    .replace(/ᵐ/g, "^{m}")
+    .replace(/²/g, "^{2}")
+    .replace(/−/g, "-")
+    .replace(/·/g, "\\cdot ")
+    .replace(/γ/g, "\\gamma ")
+    .replace(/π/g, "\\pi ")
+    .replace(/ε/g, "\\varepsilon ")
+    .replace(/≥/g, "\\ge ")
+    .replace(/⇒/g, "\\;\\Rightarrow\\; ");
+  const wrap = s => (/[ ·+−]/.test(s) ? `(${s})` : s);      // 單一數字不加括號
+  const frac = (n, d) => ({ text: `${wrap(n)}/${wrap(d)}`, tex: `\\dfrac{${tx(n)}}{${tx(d)}}` });
+  const sub = i => (i === 1 ? "₁" : "₂");
+
+  // lhs = 分式 = 結果
+  function line(lhs, fr, value, actual) {
+    const item = {
+      text: `${lhs} = ${fr.text} = ${f2(value)}`,
+      tex: `${tx(lhs)} = ${fr.tex} = ${tx(f2(value))}`,
+      value, actual: actual === undefined ? value : actual, note: null
+    };
+    if (Math.abs(item.value - item.actual) > 1e-6) {
+      item.note = `內部解為 ${f2(value)}，不可行 → 角解 Corner：實際採用 ${f2(item.actual)}`;
+    }
+    return item;
+  }
+  // lhs = 表達式 = 結果（無分式）
+  function plain(lhs, expr, value, actual) {
+    const item = {
+      text: `${lhs} = ${expr} = ${f2(value)}`,
+      tex: `${tx(lhs)} = ${tx(expr)} = ${tx(f2(value))}`,
+      value, actual: actual === undefined ? value : actual, note: null
+    };
+    if (Math.abs(item.value - item.actual) > 1e-6) {
+      item.note = `內部解為 ${f2(value)}，不可行 → 角解 Corner：實際採用 ${f2(item.actual)}`;
+    }
+    return item;
+  }
+
+  function cournot(par, r) {
+    const { a, b, g, c1, c2, homo } = par;
+    const A = num(a), B = num(b), G = num(g), C = [null, num(c1), num(c2)];
+    const out = [];
+    for (const i of [1, 2]) {
+      const j = 3 - i, ci = i === 1 ? c1 : c2, cj = i === 1 ? c2 : c1;
+      const actual = r[`q${i}`];
+      if (homo) {
+        out.push(line(`q${sub(i)}*`, frac(`${A} − 2·${C[i]} + ${C[j]}`, `3·${B}`), (a - 2 * ci + cj) / (3 * b), actual));
+      } else {
+        out.push(line(`q${sub(i)}*`, frac(`2·${B}·(${A} − ${C[i]}) − ${G}·(${A} − ${C[j]})`, `4·${B}² − ${G}²`),
+          (2 * b * (a - ci) - g * (a - cj)) / (4 * b * b - g * g), actual));
+      }
+    }
+    if (homo) out.push(line("P*", frac(`${A} + ${C[1]} + ${C[2]}`, "3"), (a + c1 + c2) / 3, r.p1));
+    return out;
+  }
+
+  function bertrand(par, r) {
+    const { a, b, g, c1, c2, homo } = par;
+    const A = num(a), B = num(b), G = num(g);
+    if (homo) {
+      if (Math.abs(c1 - c2) < 1e-9) {
+        return [plain("P*", `c₁ = c₂`, c1, r.p1)].map(it => ({ ...it,
+          text: `P* = c₁ = c₂ = ${f2(c1)}`, tex: `P^{*} = c_{1} = c_{2} = ${tx(f2(c1))}` }));
+      }
+      const L = c1 < c2 ? 1 : 2, H = 3 - L;
+      const cL = Math.min(c1, c2), cH = Math.max(c1, c2);
+      const pm = (a + cL) / 2;
+      const items = [line(`p${sub(L)}ᵐ`, frac(`${A} + ${num(cL)}`, "2"), pm)];
+      if (cH < pm) {
+        const it = plain("P*", `c${sub(H)} − ε`, cH, r.p1);
+        items.push({ ...it, text: `P* = c${sub(H)} − ε → ${f2(cH)}`, tex: `P^{*} = c_{${H}} - \\varepsilon \\to ${tx(f2(cH))}` });
+        items.push(plain(`π${sub(L)}*`, `(${num(cH)} − ${num(cL)})·(${A} − ${num(cH)})/${B}`, (cH - cL) * (a - cH) / b, r[`pi${L}`]));
+      } else {
+        const it = plain("P*", `p${sub(L)}ᵐ`, pm, r.p1);
+        items.push({ ...it, text: `c${sub(H)} = ${num(cH)} ≥ p${sub(L)}ᵐ ⇒ P* = p${sub(L)}ᵐ = ${f2(pm)}`,
+          tex: tx(`c${sub(H)} = ${num(cH)} ≥ p${sub(L)}ᵐ ⇒ P* = p${sub(L)}ᵐ = ${f2(pm)}`) });
+      }
+      return items;
+    }
+    const k = [null, a * (b - g) + b * c1, a * (b - g) + b * c2];
+    const C = [null, num(c1), num(c2)];
+    const limit = !!(r.corner && r.corner.computed === false);
+    const out = [];
+    for (const i of [1, 2]) {
+      out.push(plain(`k${sub(i)}`, `${A}·(${B} − ${G}) + ${B}·${C[i]}`, k[i]));
+    }
+    for (const i of [1, 2]) {
+      const j = 3 - i;
+      const value = (2 * b * k[i] + g * k[j]) / (4 * b * b - g * g);
+      const it = line(`p${sub(i)}*`, frac(`2·${B}·${num(k[i])} + ${G}·${num(k[j])}`, `4·${B}² − ${G}²`), value, limit ? value : r[`p${i}`]);
+      if (limit) it.note = "此參數組合屬於 limit pricing 區間，實際均衡未計算";
+      out.push(it);
+    }
+    return out;
+  }
+
+  function stackelberg(par, r) {
+    const { a, b, g, homo, leader: L } = par;
+    const F = 3 - L;
+    const cL = L === 1 ? par.c1 : par.c2, cF = L === 1 ? par.c2 : par.c1;
+    const A = num(a), B = num(b), G = num(g), CL = num(cL), CF = num(cF);
+    const qA = homo ? (a - 2 * cL + cF) / (2 * b) : (2 * b * (a - cL) - g * (a - cF)) / (2 * (2 * b * b - g * g));
+    const out = [];
+    out.push(homo
+      ? line(`q${sub(L)}*`, frac(`${A} − 2·${CL} + ${CF}`, `2·${B}`), qA, r[`q${L}`])
+      : line(`q${sub(L)}*`, frac(`2·${B}·(${A} − ${CL}) − ${G}·(${A} − ${CF})`, `2·(2·${B}² − ${G}²)`), qA, r[`q${L}`]));
+    if (homo) {
+      out.push(line(`q${sub(F)}*`, frac(`${A} + 2·${CL} − 3·${CF}`, `4·${B}`), (a + 2 * cL - 3 * cF) / (4 * b), r[`q${F}`]));
+    } else {
+      const qLa = r[`q${L}`];   // 追隨者對領導者實際產量的反應
+      out.push(line(`q${sub(F)}*`, frac(`${A} − ${CF} − ${G}·${num(qLa)}`, `2·${B}`), (a - cF - g * qLa) / (2 * b), r[`q${F}`]));
+    }
+    return out;
+  }
+
+  function get(model, input) {
+    const par = Econ.normalize(input);
+    const r = Econ.solve(model, input);
+    if (model === "cournot") return cournot(par, r);
+    if (model === "bertrand") return bertrand(par, r);
+    if (model === "stackelberg") return stackelberg(par, r);
+    return [];
+  }
+
+  return { get, tx };
+})();
+
+/* =====================================================================
+ * Iso — F16 等利潤曲線 Isoprofit curves（純函數）
+ * 數量空間：π_i = (a − b·q_i − γ·q_j − c_i)·q_i = π̄  ⇒  q_j = (a − c_i − b·q_i − π̄/q_i)/γ
+ * 價格空間（差異化 Bertrand）：π_i = (p_i − c_i)·q_i(p_i, p_j) = π̄  ⇒  解出 p_j
+ * ===================================================================== */
+const Iso = (() => {
+  const costOf = (par, i) => (i === 1 ? par.c1 : par.c2);
+  function quantity(input, firm, piBar, qi) {
+    const par = Econ.normalize(input);
+    if (par.g <= 1e-12 || !(qi > 0)) return NaN;
+    return (par.a - costOf(par, firm) - par.b * qi - piBar / qi) / par.g;
+  }
+  function quantityProfit(input, firm, qi, qj) {
+    const par = Econ.normalize(input);
+    return (par.a - par.b * qi - par.g * qj - costOf(par, firm)) * qi;
+  }
+  // 等利潤曲線斜率 d q_j / d q_i
+  function quantitySlope(input, firm, piBar, qi) {
+    const par = Econ.normalize(input);
+    if (par.g <= 1e-12 || !(qi > 0)) return NaN;
+    return (-par.b + piBar / (qi * qi)) / par.g;
+  }
+  function price(input, firm, piBar, pi) {
+    const par = Econ.normalize(input);
+    const ci = costOf(par, firm);
+    if (par.homo || par.g <= 1e-12 || !(pi > ci)) return NaN;
+    const D = par.b * par.b - par.g * par.g;
+    const A0 = (par.a * (par.b - par.g)) / D, B0 = par.b / D, C0 = par.g / D;
+    return (piBar / (pi - ci) - A0 + B0 * pi) / C0;
+  }
+  function priceProfit(input, firm, pi, pj) {
+    const par = Econ.normalize(input);
+    const D = par.b * par.b - par.g * par.g;
+    const q = (par.a * (par.b - par.g) - par.b * pi + par.g * pj) / D;
+    return (pi - costOf(par, firm)) * q;
+  }
+  return { quantity, quantityProfit, quantitySlope, price, priceProfit };
+})();
+
+/* =====================================================================
+ * Market — F15 市場圖資料（純函數；回傳通用繪圖規格，Plotly 與 SVG 備援共用）
+ * 同質：市場需求 P = a − bQ、MC 線、五種市場結構的 (Q, P)、目前模型的 CS 陰影
+ * 差異化：沒有單一市場需求，改畫廠商 1 在對手均衡策略下的剩餘需求 Residual demand
+ * ===================================================================== */
+const Market = (() => {
+  const f2 = v => (Math.abs(v) < 0.005 ? 0 : v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const STRUCTS = [
+    { key: "cournot", name: "Cournot", symbol: "circle" },
+    { key: "bertrand", name: "Bertrand", symbol: "square" },
+    { key: "stackelberg", name: "Stackelberg", symbol: "triangle-up" },
+    { key: "pc", name: "完全競爭 PC", symbol: "cross" },
+    { key: "monopoly", name: "獨占 Monopoly", symbol: "x" }
+  ];
+  const isLimit = r => !!(r && r.corner && r.corner.computed === false);
+
+  // 同質需求線上的點：P = a − bQ
+  function build(input, res, model) {
+    const par = Econ.normalize(input);
+    const { a, b, g, c1, c2 } = par;
+    const spec = { xs: "Q", ys: "P", lines: [], polys: [], points: [], note: "" };
+    if (par.homo) {
+      const Qmax = a / b;
+      spec.xTitle = "總產量 Q Quantity"; spec.yTitle = "價格 P Price";
+      spec.xRange = [0, Qmax * 1.02]; spec.yRange = [0, a * 1.02];
+      const r = res[model];
+      if (!isLimit(r)) {
+        const Q = r.q1 + r.q2, P = r.p1;
+        spec.polys.push({ name: `消費者剩餘 CS = ${f2(r.cs)}`, color: "--cs", x: [0, 0, Q, 0], y: [P, a, P, P] });
+      }
+      spec.lines.push({ name: "需求 Demand P = a − bQ", color: "--fg", width: 2.5, x: [0, Qmax], y: [a, 0] });
+      if (Math.abs(c1 - c2) < 1e-9) {
+        spec.lines.push({ name: `MC = c = ${f2(c1)}`, color: "--sw", dash: "dash", width: 2, x: [0, Qmax], y: [c1, c1] });
+      } else {
+        spec.lines.push({ name: `MC₁ = c₁ = ${f2(c1)}`, color: "--f1", dash: "dash", width: 2, x: [0, Qmax], y: [c1, c1] });
+        spec.lines.push({ name: `MC₂ = c₂ = ${f2(c2)}`, color: "--f2", dash: "dash", width: 2, x: [0, Qmax], y: [c2, c2] });
+      }
+      for (const s of STRUCTS) {
+        const rs = res[s.key];
+        if (isLimit(rs)) continue;
+        const cur = s.key === model;
+        const Q = rs.q1 + rs.q2, P = rs.p1;
+        spec.points.push({
+          name: cur ? `${s.name}（目前）` : s.name, x: Q, y: P, symbol: cur ? "diamond" : s.symbol,
+          size: cur ? 15 : 12, color: cur ? "--eq" : (s.key === "pc" || s.key === "monopoly" ? "--sw" : "--accent"),
+          open: false, text: `<b>${s.name}</b><br>Q = ${f2(Q)}<br>P = ${f2(P)}<br>CS = ${f2(rs.cs)}`
+        });
+      }
+      spec.note = "黑色菱形為目前模型的均衡點，綠色陰影為其消費者剩餘；其餘符號為另外四種市場結構，全部落在同一條需求線上。";
+      // 均衡點重合時符號會互相遮住，在說明裡標出來
+      const groups = [];
+      for (const pt of spec.points) {
+        const g0 = groups.find(gp => Math.abs(gp.x - pt.x) < 1e-6 && Math.abs(gp.y - pt.y) < 1e-6);
+        if (g0) g0.names.push(pt.name.replace("（目前）", "")); else groups.push({ x: pt.x, y: pt.y, names: [pt.name.replace("（目前）", "")] });
+      }
+      const overlaps = groups.filter(gp => gp.names.length > 1);
+      if (overlaps.length) spec.note += " 重合的點：" + overlaps.map(gp => `${gp.names.join("、")}（Q = ${f2(gp.x)}）`).join("；") + "。";
+      return spec;
+    }
+    // 差異化：廠商 1 的剩餘需求
+    const r = res[model];
+    spec.xTitle = "廠商 1 產量 q₁"; spec.yTitle = "廠商 1 價格 P₁";
+    spec.xs = "q₁"; spec.ys = "P₁";
+    if (isLimit(r)) {
+      spec.xRange = [0, (a / b) * 1.02]; spec.yRange = [0, a * 1.02];
+      spec.note = "此參數組合屬於 limit pricing 區間，未計算均衡，因此不畫剩餘需求。";
+      return spec;
+    }
+    let intercept, slope, label;
+    if (model === "bertrand") {          // 對手價格固定在 p₂*
+      const D = b * b - g * g;
+      intercept = (a * (b - g) + g * r.p2) / b;
+      slope = D / b;
+      label = `剩餘需求（p₂ 固定 = ${f2(r.p2)}）`;
+    } else {                             // 對手產量固定在 q₂*
+      intercept = a - g * r.q2;
+      slope = b;
+      label = `剩餘需求（q₂ 固定 = ${f2(r.q2)}）`;
+    }
+    const xMax = Math.max(a / b, r.q1 * 1.6, 1e-6);
+    spec.xRange = [0, xMax * 1.02]; spec.yRange = [0, Math.max(a, intercept) * 1.02];
+    const xEnd = Math.min(xMax * 1.02, intercept / slope);
+    spec.lines.push({ name: `廠商 1 ${label}`, color: "--f1", width: 2.5, x: [0, xEnd], y: [intercept, intercept - slope * xEnd] });
+    spec.lines.push({ name: `MC₁ = c₁ = ${f2(c1)}`, color: "--f1", dash: "dash", width: 2, x: [0, xMax * 1.02], y: [c1, c1] });
+    spec.points.push({ name: "廠商 1 均衡點", x: r.q1, y: r.p1, symbol: "diamond", size: 15, color: "--eq", open: false,
+      text: `<b>廠商 1 均衡點</b><br>q₁ = ${f2(r.q1)}<br>P₁ = ${f2(r.p1)}<br>π₁ = ${f2(r.pi1)}` });
+    spec.residual = { intercept, slope };
+    spec.note = (model === "bertrand"
+      ? "差異化產品沒有單一市場需求。這裡畫廠商 1 在對手價格固定時的剩餘需求，比數量競爭時平坦，所以加價空間較小。"
+      : "差異化產品沒有單一市場需求。這裡畫廠商 1 在對手產量固定時的剩餘需求。") + "CS 陰影只在同質產品顯示。";
+    return spec;
+  }
+  return { build, STRUCTS };
+})();
+
+/* =====================================================================
+ * Tests3 — Phase 3 新增計算的測試（不修改 Tests；報告頁另列一節）
+ * ===================================================================== */
+const Tests3 = (() => {
+  const TOL = 0.01;
+  const P = (c1, c2, theta = 1, leader = 1) => ({ a: 100, b: 1, c1, c2, theta, leader });
+  const close = (x, y, tol = TOL) => Number.isFinite(x) && Number.isFinite(y) && Math.abs(x - y) <= tol;
+  const rows = [];
+  const add = (group, label, pass, detail) => rows.push({ group, label, pass: !!pass, detail: detail || "" });
+  const solveAll = inp => ({
+    cournot: Econ.cournot(inp), bertrand: Econ.bertrand(inp), stackelberg: Econ.stackelberg(inp),
+    pc: Econ.perfectCompetition(inp), monopoly: Econ.monopoly(inp)
+  });
+  const shoelace = (xs, ys) => Math.abs(xs.reduce((s, x, k) => {
+    const k2 = (k + 1) % xs.length; return s + x * ys[k2] - xs[k2] * ys[k];
+  }, 0)) / 2;
+
+  function run() {
+    rows.length = 0;
+
+    /* ---- F12 代入算式 ---- */
+    const s0 = Subst.get("cournot", P(10, 10))[0];
+    add("F12 代入算式", "基準案例與規格範例一致", s0.text === "q₁* = (100 − 2·10 + 10)/(3·1) = 30.00", s0.text);
+    const substCases = [];
+    for (const [c1, c2, th] of [[10, 10, 1], [10, 25, 1], [10, 10, 0.5], [10, 25, 0.5], [30, 15, 0.8]])
+      for (const m of ["cournot", "bertrand", "stackelberg"])
+        for (const L of [1, 2]) {
+          if (m !== "stackelberg" && L === 2) continue;
+          substCases.push({ m, inp: P(c1, c2, th, L) });
+        }
+    let mism = [];
+    for (const { m, inp } of substCases) {
+      const r = Econ.solve(m, inp);
+      if (r.corner) continue;
+      for (const it of Subst.get(m, inp)) if (!close(it.value, it.actual, 1e-6)) mism.push(`${m} ${JSON.stringify(inp)} ${it.text}`);
+    }
+    add("F12 代入算式", "無角解時，代入結果等於 Econ 實際值", mism.length === 0, mism.length ? mism.slice(0, 2).join("；") : `${substCases.length} 組參數`);
+    const cItems = Subst.get("cournot", P(10, 60));
+    const q2 = cItems[1];
+    add("F12 代入算式", "角解：顯示內部解並註明實際採用 0", q2.value < 0 && q2.actual === 0 && !!q2.note, q2.note || "");
+    const bItems = Subst.get("bertrand", P(10, 25));
+    add("F12 代入算式", "同質 Bertrand 不對稱：P* → c₂、π₁* = 1,125", close(bItems[1].value, 25) && close(bItems[2].value, 1125), bItems.map(i => i.text).join("｜"));
+    const dItems = Subst.get("bertrand", P(10, 10, 0.5));
+    add("F12 代入算式", "差異化 Bertrand：k₁ = 60、p₁* = 40", close(dItems[0].value, 60) && close(dItems[2].value, 40), dItems[2].text);
+    const sL2 = Subst.get("stackelberg", P(10, 25, 1, 2));
+    add("F12 代入算式", "Stackelberg 領導者 = 廠商 2：q₂* = 30、q₁* = 30", sL2[0].text.startsWith("q₂*") && close(sL2[0].value, 30) && close(sL2[1].value, 30), sL2.map(i => i.text).join("｜"));
+    let badText = [];
+    for (const ps of [{ a: 10, b: 5, c1: 9.5, c2: 0 }, { a: 10, b: 5, c1: 0, c2: 9.5 }, { a: 100, b: 1, c1: 99.5, c2: 99.5 }, { a: 200, b: 0.1, c1: 0, c2: 199 }])
+      for (const th of [0, 0.5, 0.95, 1]) for (const m of ["cournot", "bertrand", "stackelberg"]) for (const L of [1, 2])
+        for (const it of Subst.get(m, { ...ps, theta: th, leader: L }))
+          if (/NaN|Infinity|undefined/.test(it.text + it.tex)) badText.push(`${m} θ=${th}: ${it.text}`);
+    add("F12 代入算式", "極端值下算式不含 NaN / Infinity", badText.length === 0, badText.slice(0, 2).join("；"));
+
+    /* ---- F16 等利潤曲線 ---- */
+    let worst = 0;
+    for (const inp of [P(10, 10), P(10, 25, 0.5), P(20, 5, 0.8)])
+      for (const firm of [1, 2]) {
+        const piBar = 500;
+        for (let k = 1; k <= 20; k++) {
+          const qi = k * 3;
+          const qj = Iso.quantity(inp, firm, piBar, qi);
+          worst = Math.max(worst, Math.abs(Iso.quantityProfit(inp, firm, qi, qj) - piBar));
+        }
+      }
+    add("F16 等利潤曲線", "數量空間：曲線上每點利潤 = π̄", worst < 1e-6, `最大誤差 ${worst.toExponential(1)}`);
+    let worstP = 0;
+    for (const inp of [P(10, 10, 0.5), P(10, 25, 0.3), P(20, 5, 0.9)])
+      for (const firm of [1, 2]) for (let k = 1; k <= 20; k++) {
+        const pi = (firm === 1 ? inp.c1 : inp.c2) + k * 2.5;
+        const pj = Iso.price(inp, firm, 800, pi);
+        worstP = Math.max(worstP, Math.abs(Iso.priceProfit(inp, firm, pi, pj) - 800));
+      }
+    add("F16 等利潤曲線", "價格空間：曲線上每點利潤 = π̄", worstP < 1e-6, `最大誤差 ${worstP.toExponential(1)}`);
+    const cn = Econ.cournot(P(10, 10, 0.5));
+    add("F16 等利潤曲線", "Cournot：廠商 1 等利潤曲線在 Nash 點斜率為 0（頂點落在 R₁ 上）",
+      Math.abs(Iso.quantitySlope(P(10, 10, 0.5), 1, cn.pi1, cn.q1)) < 1e-9, `斜率 ${Iso.quantitySlope(P(10, 10, 0.5), 1, cn.pi1, cn.q1).toExponential(1)}`);
+    const tang = [];
+    for (const inp of [P(10, 10, 1, 1), P(10, 25, 1, 2), P(10, 10, 0.5, 1), P(20, 5, 0.8, 2)]) {
+      const s = Econ.stackelberg(inp), par = Econ.normalize(inp), L = par.leader;
+      const slope = Iso.quantitySlope(inp, L, s[`pi${L}`], s[`q${L}`]);
+      const rf = -par.g / (2 * par.b);
+      tang.push({ ok: Math.abs(slope - rf) < 1e-9, txt: `L=${L} θ=${inp.theta}: ${slope.toFixed(4)} vs ${rf.toFixed(4)}` });
+    }
+    add("F16 等利潤曲線", "Stackelberg：領導者等利潤曲線與追隨者反應曲線相切（斜率相同）", tang.every(t => t.ok), tang.map(t => t.txt).join("；"));
+    const bd = Econ.bertrand(P(10, 10, 0.5)), h = 1e-5;
+    const dslope = (Iso.price(P(10, 10, 0.5), 1, bd.pi1, bd.p1 + h) - Iso.price(P(10, 10, 0.5), 1, bd.pi1, bd.p1 - h)) / (2 * h);
+    add("F16 等利潤曲線", "差異化 Bertrand：廠商 1 等利潤曲線在均衡點斜率為 0", Math.abs(dslope) < 1e-4, `斜率 ${dslope.toExponential(1)}`);
+
+    /* ---- F15 市場圖 ---- */
+    const csBad = [];
+    for (const inp of [P(10, 10), P(10, 25), P(10, 60), P(30, 5)]) {
+      const res = solveAll(inp);
+      for (const m of ["cournot", "bertrand", "stackelberg"]) {
+        const spec = Market.build(inp, res, m);
+        const poly = spec.polys[0];
+        const area = poly ? shoelace(poly.x, poly.y) : 0;
+        if (!close(area, res[m].cs)) csBad.push(`${m} c=${inp.c1}/${inp.c2}: ${area} vs ${res[m].cs}`);
+      }
+    }
+    add("F15 市場圖", "同質：CS 陰影面積 = Econ 的 CS", csBad.length === 0, csBad.slice(0, 2).join("；") || "4 組參數 × 3 個模型");
+    const onDemand = [];
+    for (const inp of [P(10, 10), P(10, 25), P(10, 60)]) {
+      const res = solveAll(inp);
+      for (const pt of Market.build(inp, res, "cournot").points)
+        if (!close(pt.y, 100 - pt.x, 1e-9)) onDemand.push(`${pt.name} (${pt.x}, ${pt.y})`);
+    }
+    add("F15 市場圖", "同質：五種市場結構的 (Q, P) 都在需求線 P = a − bQ 上", onDemand.length === 0, onDemand.slice(0, 2).join("；") || "3 組參數 × 5 點");
+    const resid = [];
+    for (const inp of [P(10, 10, 0.5), P(10, 25, 0.5), P(20, 5, 0.8, 2)]) {
+      const res = solveAll(inp);
+      for (const m of ["cournot", "bertrand", "stackelberg"]) {
+        const spec = Market.build(inp, res, m);
+        if (!spec.residual) continue;
+        const y = spec.residual.intercept - spec.residual.slope * res[m].q1;
+        if (!close(y, res[m].p1, 1e-9)) resid.push(`${m}: ${y} vs ${res[m].p1}`);
+      }
+    }
+    add("F15 市場圖", "差異化：廠商 1 剩餘需求通過其均衡點", resid.length === 0, resid.slice(0, 2).join("；") || "3 組參數 × 3 個模型");
+
+    /* ---- F17 Lerner 與 HHI ---- */
+    const cA = Econ.cournot(P(10, 10));
+    add("F17 Lerner / HHI", "基準 Cournot：L₁ = L₂ = 0.75、HHI = 5,000", close(cA.lerner.l1, 0.75) && close(cA.lerner.l2, 0.75) && close(cA.hhi, 5000),
+      `L₁ ${cA.lerner.l1}、HHI ${cA.hhi}`);
+    const lerBad = [];
+    for (const [c1, c2] of [[10, 10], [10, 25], [30, 5], [0, 40]]) {
+      const r = Econ.cournot(P(c1, c2)), Q = r.q1 + r.q2, eps = r.p1 / (1 * Q);
+      for (const i of [1, 2]) if (r[`q${i}`] > 0 && !close(r.lerner[`l${i}`], (r[`q${i}`] / Q) / eps, 1e-9)) lerBad.push(`c=${c1}/${c2} 廠商 ${i}`);
+    }
+    add("F17 Lerner / HHI", "Cournot 同質：Lᵢ = sᵢ / ε（市占除以需求彈性）", lerBad.length === 0, lerBad.join("；") || "4 組參數");
+    const bp = Econ.bertrand(P(10, 10)), mB = Econ.monopoly(P(10, 25));
+    add("F17 Lerner / HHI", "Bertrand 悖論 L = 0；獨占 HHI = 10,000", close(bp.lerner.l1, 0) && close(mB.hhi, 10000), `L ${bp.lerner.l1}、HHI ${mB.hhi}`);
+    const ex = Econ.cournot(P(10, 60));
+    add("F17 Lerner / HHI", "退出廠商的 Lerner 為 0（不出現負值）", ex.lerner.l2 === 0 && ex.lerner.l1 > 0, `L₂ ${ex.lerner.l2}`);
+
+    return { rows: rows.slice(), passed: rows.filter(r => r.pass).length, total: rows.length };
+  }
+  return { run };
+})();
+
+/* =====================================================================
+ * State — 介面狀態（單一物件）
+ * ===================================================================== */
+const State = {
+  model: "cournot",              // cournot | bertrand | stackelberg
+  product: "homo",               // homo 同質 | diff 差異化
+  params: { a: 100, b: 1, c1: 10, c2: 10 },
+  thetaDiff: 0.5,                // 差異化模式的 θ；同質模式固定 θ = 1
+  leader: 1,                     // F11 Stackelberg 領導者
+  compareView: "welfare",        // welfare 福利 | pq 價格與產量 | market 市場圖
+  showIso: false,                // F16 等利潤曲線
+  preset: "baseline",
+  controlsCollapsed: false,
+  cdn: { katex: "loading", plotly: "loading" },
+  animateNext: false
+};
+
+const PARAM_DEFS = [
+  { key: "a", sym: "a", zh: "需求截距", en: "Demand intercept", min: () => 10, max: () => 200, step: 1 },
+  { key: "b", sym: "b", zh: "需求斜率", en: "Demand slope", min: () => 0.1, max: () => 5, step: 0.1 },
+  { key: "c1", sym: "c₁", zh: "廠商 1 邊際成本", en: "Marginal cost", min: () => 0, max: () => State.params.a - 0.5, step: 0.5, firm: 1 },
+  { key: "c2", sym: "c₂", zh: "廠商 2 邊際成本", en: "Marginal cost", min: () => 0, max: () => State.params.a - 0.5, step: 0.5, firm: 2 },
+  { key: "theta", sym: "θ", zh: "替代程度 γ/b", en: "Substitutability", min: () => 0, max: () => 0.95, step: 0.05, diffOnly: true }
+];
+
+const BASE_PARAMS = { a: 100, b: 1, c1: 10, c2: 10 };
+const PRESETS = [
+  { id: "baseline", zh: "基準", en: "Baseline", model: "cournot", product: "homo", params: { ...BASE_PARAMS } },
+  { id: "asym", zh: "成本不對稱", en: "Asymmetric cost", model: "cournot", product: "homo", params: { ...BASE_PARAMS, c2: 25 } },
+  { id: "paradox", zh: "Bertrand 悖論", en: "Bertrand paradox", model: "bertrand", product: "homo", params: { ...BASE_PARAMS } },
+  { id: "diff", zh: "產品差異化", en: "Differentiation", model: "bertrand", product: "diff", theta: 0.5, params: { ...BASE_PARAMS } },
+  { id: "exit", zh: "廠商退出", en: "Exit", model: "cournot", product: "homo", params: { ...BASE_PARAMS, c2: 60 } }
+];
+
+const MODELS = {
+  cournot: { zh: "Cournot", en: "數量 Quantity" },
+  bertrand: { zh: "Bertrand", en: "價格 Price" },
+  stackelberg: { zh: "Stackelberg", en: "先後行 Sequential" }
+};
+
+const getParam = key => (key === "theta" ? State.thetaDiff : State.params[key]);
+const econInput = () => ({
+  ...State.params,
+  theta: State.product === "homo" ? 1 : State.thetaDiff,
+  leader: State.leader
+});
+// 等利潤曲線只在利潤函數連續且 γ > 0 時有意義
+const isoAllowed = () => !(State.model === "bertrand" && State.product === "homo") && Econ.normalize(econInput()).g > 1e-9;
+
+function clampParam(def, v) {
+  return Math.min(Math.max(v, def.min()), def.max());
+}
+
+function setParam(key, value) {
+  if (key === "theta") State.thetaDiff = value;
+  else State.params[key] = value;
+  if (key === "a") {                                   // 調低 a 時，c 夾到上限
+    const cap = State.params.a - 0.5;
+    State.params.c1 = Math.min(State.params.c1, cap);
+    State.params.c2 = Math.min(State.params.c2, cap);
+  }
+  State.preset = null;
+}
+
+function applyPreset(id) {
+  const p = PRESETS.find(x => x.id === id);
+  if (!p) return;
+  State.model = p.model;
+  State.product = p.product;
+  State.params = { ...p.params };
+  if (p.theta !== undefined) State.thetaDiff = p.theta;
+  State.leader = 1;
+  State.preset = id;
+  State.animateNext = true;
+}
+
+/* =====================================================================
+ * Lessons — 動畫教學：Cournot 收斂、Bertrand 削價、Stackelberg 先行者優勢
+ * 資料由 Econ 純函數產生（可測試）；動畫為自繪 SVG，不依賴任何 CDN。
+ * ===================================================================== */
+const Lessons = (() => {
+  const W = 520, H = 340, M = { l: 48, r: 18, t: 16, b: 42 };
+  const BASE_MS = { cournot: 850, bertrand: 140, stackelberg: 55 };
+  const S = { tab: "cournot", idx: 0, playing: false, speed: 1, mode: "sequential", lambda: 1, start: [0, 0], lead: 1, sig: "" };
+  let root = null, data = null, timer = null;
+
+  const f2 = x => (Number.isFinite(x) ? (Math.abs(x) < 0.005 ? 0 : x).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—");
+  const f1 = x => (Number.isFinite(x) ? (+x.toFixed(1)).toString() : "—");
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+  /* ---------- 資料層（純函數，可單獨測試） ---------- */
+  function cournotPath(input, opts = {}) {
+    return Econ.dynamics("cournot", input, {
+      start: opts.start || [0, 0], mode: opts.mode || "sequential", lambda: opts.lambda || 1, maxSteps: 80
+    });
+  }
+
+  function undercutPath(input) {
+    const inp = { ...input, theta: 1 };                         // 悖論只在同質產品出現
+    const par = Econ.normalize(inp);
+    const pm = (par.a + Math.min(par.c1, par.c2)) / 2;         // 低成本廠商的獨占價
+    const d = Econ.dynamics("bertrand", inp, { start: [pm, pm], mode: "sequential", maxSteps: 400 });
+    return { ...d, par, pm };
+  }
+
+  function homoOutcome(par, p1, p2) {
+    const p = Math.min(p1, p2);
+    const Q = Math.max(0, (par.a - p) / par.b);
+    const s1 = Math.abs(p1 - p2) < 1e-9 ? 0.5 : p1 < p2 ? 1 : 0;
+    const s2 = 1 - s1;
+    return { p, Q, q1: s1 * Q, q2: s2 * Q, pi1: (p1 - par.c1) * s1 * Q, pi2: (p2 - par.c2) * s2 * Q };
+  }
+
+  function stackSweep(input, leader, n = 80) {
+    const L = leader === 2 ? 2 : 1, F = L === 1 ? 2 : 1;
+    const inp = { ...input, leader: L };
+    const par = Econ.normalize(inp);
+    const cL = L === 1 ? par.c1 : par.c2, cF = F === 1 ? par.c1 : par.c2;
+    const qMax = Math.max((par.a - cL) / par.b, 1e-6);
+    const pts = [];
+    for (let k = 0; k <= n; k++) {
+      const qL = (qMax * k) / n;
+      const qF = Econ.reaction.quantity(inp, F, qL);
+      const PL = par.a - par.b * qL - par.g * qF;
+      const PF = par.a - par.b * qF - par.g * qL;
+      pts.push({ qL, qF, PL, PF, piL: (PL - cL) * qL, piF: (PF - cF) * qF });
+    }
+    let best = 0;
+    pts.forEach((p, i) => { if (p.piL > pts[best].piL) best = i; });
+    return { pts, best, qMax, L, F, par, eq: Econ.stackelberg(inp), co: Econ.cournot(inp) };
+  }
+
+  /* ---------- SVG 小工具 ---------- */
+  const niceStep = raw => {
+    const e = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    const m = raw / e;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * e;
+  };
+  function frame(xmax, ymax, xl, yl) {
+    const X = v => M.l + (v / xmax) * (W - M.l - M.r);
+    const Y = v => H - M.b - (v / ymax) * (H - M.t - M.b);
+    let g = "";
+    const sx = niceStep(xmax / 5), sy = niceStep(ymax / 5);
+    for (let v = 0; v <= xmax + 1e-9; v += sx)
+      g += `<line x1="${X(v)}" y1="${M.t}" x2="${X(v)}" y2="${H - M.b}" class="gl"/><text x="${X(v)}" y="${H - M.b + 15}" text-anchor="middle">${+v.toFixed(2)}</text>`;
+    for (let v = 0; v <= ymax + 1e-9; v += sy)
+      g += `<line x1="${M.l}" y1="${Y(v)}" x2="${W - M.r}" y2="${Y(v)}" class="gl"/><text x="${M.l - 6}" y="${Y(v) + 4}" text-anchor="end">${+v.toFixed(2)}</text>`;
+    g += `<text x="${(M.l + W - M.r) / 2}" y="${H - 6}" text-anchor="middle" class="axl">${esc(xl)}</text>`;
+    g += `<text x="12" y="${(M.t + H - M.b) / 2}" text-anchor="middle" class="axl" transform="rotate(-90 12 ${(M.t + H - M.b) / 2})">${esc(yl)}</text>`;
+    return { X, Y, g, clip: `<clipPath id="ls-clip"><rect x="${M.l}" y="${M.t}" width="${W - M.l - M.r}" height="${H - M.t - M.b}"/></clipPath>` };
+  }
+  const poly = (pts, X, Y, cls, extra = "") =>
+    `<polyline class="${cls}" ${extra} points="${pts.map(p => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ")}"/>`;
+  const dot = (x, y, cls, r = 5) => `<circle class="${cls}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}"/>`;
+
+  /* ---------- 建立目前教學的資料 ---------- */
+  function rebuild() {
+    const inp = econInput();
+    S.idx = 0; stop();
+    if (S.tab === "cournot") {
+      data = { kind: "cournot", inp, res: cournotPath(inp, { start: S.start, mode: S.mode, lambda: S.lambda }), nash: Econ.cournot(inp) };
+      data.N = data.res.path.length - 1;
+    } else if (S.tab === "bertrand") {
+      data = { kind: "bertrand", inp, res: undercutPath(inp) };
+      data.N = data.res.path.length - 1;
+    } else {
+      data = { kind: "stackelberg", inp, sw: stackSweep(inp, S.lead) };
+      data.N = data.sw.pts.length - 1;
+    }
+  }
+
+  /* ---------- 各教學的畫面 ---------- */
+  function viewCournot() {
+    const { inp, res, nash } = data, par = Econ.normalize(inp);
+    const ax = Math.max(par.a / par.b, 1);
+    const fr = frame(ax, ax, "廠商 1 產量 q₁ Output of Firm 1", "廠商 2 產量 q₂");
+    const { X, Y } = fr;
+    const N = 60, r1 = [], r2 = [];
+    for (let k = 0; k <= N; k++) {
+      const v = (ax * k) / N;
+      r1.push([Econ.reaction.quantity(inp, 1, v), v]);
+      r2.push([v, Econ.reaction.quantity(inp, 2, v)]);
+    }
+    const pts = res.path.slice(0, S.idx + 1);
+    const cur = pts[pts.length - 1];
+    const prev = pts[pts.length - 2];
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cournot 最適反應收斂動畫">${fr.clip}${fr.g}
+      <g clip-path="url(#ls-clip)">${poly(r1, X, Y, "ln f1")}${poly(r2, X, Y, "ln f2")}</g>
+      <text x="${W - M.r - 4}" y="${M.t + 12}" text-anchor="end" class="lab f1t">R₁(q₂)</text>
+      <text x="${W - M.r - 4}" y="${M.t + 26}" text-anchor="end" class="lab f2t">R₂(q₁)</text>
+      ${poly(pts.map(p => [p.x1, p.x2]), X, Y, "ln path")}
+      ${pts.map(p => dot(X(p.x1), Y(p.x2), "pt", 2.6)).join("")}
+      ${dot(X(res.path[0].x1), Y(res.path[0].x2), "start", 6)}
+      <text x="${X(res.path[0].x1) + 9}" y="${Y(res.path[0].x2) - 7}" class="lab">起點</text>
+      ${dot(X(nash.q1), Y(nash.q2), "nash", 8)}
+      ${dot(X(cur.x1), Y(cur.x2), "now", 6)}</svg>`;
+    let say;
+    if (S.idx === 0) say = `起點：廠商 1 產出 <b>${f2(cur.x1)}</b>、廠商 2 產出 <b>${f2(cur.x2)}</b>。按「播放」，看兩家怎麼互相調整。`;
+    else if (S.mode === "sequential") {
+      const who = S.idx % 2 === 1 ? 1 : 2;
+      const opp = who === 1 ? prev.x2 : prev.x1, mine = who === 1 ? cur.x1 : cur.x2;
+      say = `第 ${S.idx} 步：廠商 ${who} 看到對手產出 ${f2(opp)}，把自己調整成最適反應 <b>${f2(mine)}</b>（Best response）。`;
+    } else say = `第 ${S.idx} 步：兩家同時以對手上一步的產出為給定，各自調整到 <b>(${f2(cur.x1)}, ${f2(cur.x2)})</b>。`;
+    if (S.idx === data.N) {
+      say += res.converged
+        ? ` <b>第 ${res.steps} 步收斂 Converged</b>，停在兩條反應曲線的交點，即 Cournot–Nash 均衡 (${f2(nash.q1)}, ${f2(nash.q2)})：價格 ${f2(nash.p1)}，利潤 ${f2(nash.pi1)} / ${f2(nash.pi2)}。`
+        : ` 已達 ${data.N} 步，仍接近均衡 (${f2(nash.q1)}, ${f2(nash.q2)})。`;
+    }
+    const rows = pts.slice(-6).map(p => {
+      const a1 = p.x1, a2 = p.x2;
+      const pr1 = par.a - par.b * a1 - par.g * a2, pr2 = par.a - par.b * a2 - par.g * a1;
+      return `<tr><td>${p.t}</td><td>${f2(a1)}</td><td>${f2(a2)}</td><td>${f2((pr1 - par.c1) * a1)}</td><td>${f2((pr2 - par.c2) * a2)}</td></tr>`;
+    }).join("");
+    const table = `<table class="ls-table"><thead><tr><th>步 t</th><th>q₁</th><th>q₂</th><th>π₁</th><th>π₂</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<div class="ls-grid"><div class="ls-chart">${svg}<p class="note">小提示：點圖上任一處可以更換起點。</p></div><div class="ls-side"><p class="ls-say" aria-live="polite">${say}</p>${table}</div></div>`;
+  }
+
+  function viewBertrand() {
+    const { res } = data, par = res.par, path = res.path;
+    const N = data.N, cur = path[S.idx];
+    const ymax = Math.max(res.pm * 1.08, 1);
+    const fr = frame(Math.max(N, 1), ymax, "步數 Step", "價格 Price");
+    const { X, Y } = fr;
+    const sl = path.slice(0, S.idx + 1);
+    const o = homoOutcome(par, cur.x1, cur.x2);
+    const cl = (c, txt, cls, left) => `<line x1="${M.l}" y1="${Y(c)}" x2="${W - M.r}" y2="${Y(c)}" class="ln ${cls}"/><text x="${left ? M.l + 6 : W - M.r - 4}" y="${Y(c) - 5}" text-anchor="${left ? "start" : "end"}" class="lab">${txt}</text>`;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bertrand 削價動畫">${fr.clip}${fr.g}
+      ${cl(res.pm, `獨占價 ${f2(res.pm)}`, "ref")}
+      ${par.c1 === par.c2 ? cl(par.c1, `邊際成本 ${f2(par.c1)}`, "ref", true) : cl(par.c1, `c₁ ${f2(par.c1)}`, "ref", true) + cl(par.c2, `c₂ ${f2(par.c2)}`, "ref", true)}
+      ${poly(sl.map(p => [p.t, p.x2]), X, Y, "ln f2 dash")}
+      ${poly(sl.map(p => [p.t, p.x1]), X, Y, "ln f1")}
+      ${dot(X(cur.t), Y(cur.x2), "now f2d", 5)}${dot(X(cur.t), Y(cur.x1), "now f1d", 4)}</svg>`;
+    let say;
+    if (S.idx === 0) say = `起點：兩家都訂獨占價 <b>${f2(cur.x1)}</b>，各分一半市場。按「播放」：只要比對手低一點，就能搶走整個市場。`;
+    else {
+      const who = S.idx % 2 === 1 ? 1 : 2;
+      say = `第 ${S.idx} 步：廠商 ${who} 比對手便宜 1 單位（教學用 ε = 1），拿下整個市場。價格 ${f2(cur.x1)} / ${f2(cur.x2)}。`;
+    }
+    if (S.idx === data.N) {
+      say += par.c1 === par.c2
+        ? ` <b>價格被壓到邊際成本 ${f2(par.c1)}，利潤為 0</b>：只要兩家就足以做到完全競爭價格，這就是 Bertrand 悖論 Bertrand paradox。`
+        : ` 低成本廠商把價格壓到略低於高成本廠商的成本 ${f2(Math.max(par.c1, par.c2))}，獨拿市場；高成本廠商利潤為 0。`;
+    }
+    const stat = `<table class="ls-table"><thead><tr><th></th><th>廠商 1</th><th>廠商 2</th></tr></thead><tbody>
+      <tr><td>價格 Price</td><td>${f2(cur.x1)}</td><td>${f2(cur.x2)}</td></tr>
+      <tr><td>產量 Output</td><td>${f2(o.q1)}</td><td>${f2(o.q2)}</td></tr>
+      <tr><td>利潤 Profit</td><td>${f2(o.pi1)}</td><td>${f2(o.pi2)}</td></tr></tbody></table>`;
+    return `<div class="ls-grid"><div class="ls-chart">${svg}<p class="note">此動畫固定用「同質產品」（θ = 1），與上方產品型態設定無關；成本與需求沿用左側參數。</p></div><div class="ls-side"><p class="ls-say" aria-live="polite">${say}</p>${stat}</div></div>`;
+  }
+
+  function viewStackelberg() {
+    const { sw } = data, pts = sw.pts, cur = pts[S.idx], par = sw.par, L = sw.L, F = sw.F;
+    // 左：反應平面（領導者產量在橫軸，追隨者在縱軸，與領導者編號無關，教學較直觀）
+    const ax = Math.max(par.a / par.b, 1);
+    const f1 = frame(ax, ax, `領導者（廠商 ${L}）產量 q_L`, `追隨者（廠商 ${F}）產量 q_F`);
+    const N = 60, rf = [];
+    const inp = { ...data.inp, leader: L };
+    for (let k = 0; k <= N; k++) { const v = (ax * k) / N; rf.push([v, Econ.reaction.quantity(inp, F, v)]); }
+    const co = sw.co, eq = sw.eq;
+    const coL = L === 1 ? co.q1 : co.q2, coF = F === 1 ? co.q1 : co.q2;
+    const eqL = L === 1 ? eq.q1 : eq.q2, eqF = F === 1 ? eq.q1 : eq.q2;
+    const A = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="追隨者反應曲線與領導者承諾">${f1.clip}${f1.g}
+      <g clip-path="url(#ls-clip)">${poly(rf, f1.X, f1.Y, "ln " + (F === 1 ? "f1" : "f2"))}</g>
+      <line x1="${f1.X(cur.qL)}" y1="${M.t}" x2="${f1.X(cur.qL)}" y2="${H - M.b}" class="ln commit ${L === 1 ? "f1" : "f2"}"/>
+      ${dot(f1.X(coL), f1.Y(coF), "nash", 7)}<text x="${f1.X(coL) + 10}" y="${f1.Y(coF) + 4}" class="lab">Cournot</text>
+      ${S.idx >= sw.best ? dot(f1.X(eqL), f1.Y(eqF), "star", 7) + `<text x="${f1.X(eqL) + 10}" y="${f1.Y(eqF) - 6}" class="lab strong">Stackelberg</text>` : ""}
+      ${dot(f1.X(cur.qL), f1.Y(cur.qF), "now", 6)}</svg>`;
+    // 右：領導者利潤曲線
+    const pmax = Math.max(...pts.map(p => p.piL), 1) * 1.1;
+    const f2c = frame(sw.qMax, pmax, `領導者產量 q_L`, "領導者利潤 π_L");
+    const prof = pts.slice(0, S.idx + 1).map(p => [p.qL, Math.max(p.piL, 0)]);
+    const coPi = L === 1 ? co.pi1 : co.pi2;
+    const B = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="領導者利潤曲線">${f2c.clip}${f2c.g}
+      <g clip-path="url(#ls-clip)"><line x1="${M.l}" y1="${f2c.Y(coPi)}" x2="${W - M.r}" y2="${f2c.Y(coPi)}" class="ln ref"/></g>
+      <text x="${W - M.r - 4}" y="${f2c.Y(coPi) - 5}" text-anchor="end" class="lab">Cournot 利潤 ${f2(coPi)}</text>
+      ${poly(prof, f2c.X, f2c.Y, "ln " + (L === 1 ? "f1" : "f2"))}
+      ${S.idx >= sw.best ? dot(f2c.X(pts[sw.best].qL), f2c.Y(pts[sw.best].piL), "star", 7) : ""}
+      ${dot(f2c.X(cur.qL), f2c.Y(Math.max(cur.piL, 0)), "now", 6)}</svg>`;
+    let say;
+    if (S.idx === 0) say = `領導者（廠商 ${L}）先承諾產量，追隨者看到後才依反應曲線回應。按「播放」：把領導者的承諾量從 0 慢慢加大。`;
+    else say = `領導者承諾 q_L = <b>${f2(cur.qL)}</b>，追隨者最適回應 q_F = <b>${f2(cur.qF)}</b>，價格 ${f2(cur.PL)}。領導者利潤 <b>${f2(cur.piL)}</b>，追隨者 ${f2(cur.piF)}。`;
+    if (S.idx === data.N) say = `掃描完成。利潤最高點在 q_L ≈ ${f2(pts[sw.best].qL)}，就是 Stackelberg 均衡（理論值 ${f2(eqL)}）：領導者利潤 ${f2(L === 1 ? eq.pi1 : eq.pi2)}，高於 Cournot 的 ${f2(coPi)}，這就是先行者優勢 First-mover advantage。`;
+    return `<div class="ls-grid two"><div class="ls-chart">${A}</div><div class="ls-chart">${B}</div></div><p class="ls-say" aria-live="polite">${say}</p>`;
+  }
+
+  /* ---------- 控制與繪製 ---------- */
+  const INTRO = {
+    cournot: ["動畫 1｜Cournot：互相猜測，一步步走向均衡", "每一步，廠商把對手目前的產量當成給定，改成自己的最適反應 Best response。路徑一步步逼近兩條反應曲線的交點 Nash 均衡。反應曲線斜率的絕對值 γ/(2b) ≤ ½ < 1，所以一定收斂。"],
+    bertrand: ["動畫 2｜Bertrand 悖論：削價把價格壓到成本", "產品完全相同時，只要價格比對手低一點，就能搶走整個市場。兩家輪流削價，價格最後被壓到邊際成本，利潤為 0。"],
+    stackelberg: ["動畫 3｜Stackelberg：先承諾者的優勢", "領導者先承諾產量，追隨者再回應。左圖是追隨者的反應曲線，右圖是領導者的利潤：把承諾量逐步加大，利潤先升後降，最高點就是 Stackelberg 均衡。"]
+  };
+
+  function extraHTML() {
+    if (S.tab === "cournot") return `
+      <span class="ls-lbl">更新方式</span>
+      <button type="button" class="btn small" data-ls-mode="sequential" aria-pressed="${S.mode === "sequential"}">輪流 Sequential</button>
+      <button type="button" class="btn small" data-ls-mode="simultaneous" aria-pressed="${S.mode === "simultaneous"}">同時 Simultaneous</button>
+      <span class="ls-lbl">調整速度 λ</span>
+      <button type="button" class="btn small" data-ls-lambda="1" aria-pressed="${S.lambda === 1}">1（完全）</button>
+      <button type="button" class="btn small" data-ls-lambda="0.5" aria-pressed="${S.lambda === 0.5}">0.5（部分）</button>
+      <span class="ls-lbl">起點</span>
+      <button type="button" class="btn small" data-ls-start="0,0">(0, 0)</button>
+      <button type="button" class="btn small" data-ls-start="high">高產量</button>`;
+    if (S.tab === "stackelberg") return `
+      <span class="ls-lbl">領導者</span>
+      <button type="button" class="btn small" data-ls-lead="1" aria-pressed="${S.lead === 1}">廠商 1</button>
+      <button type="button" class="btn small" data-ls-lead="2" aria-pressed="${S.lead === 2}">廠商 2</button>`;
+    return "";
+  }
+
+  function shell() {
+    root.innerHTML = `
+      <div class="card-head"><h2 id="ls-title">動畫教學 <span class="en">Animated lessons</span></h2>
+        <div class="ls-tabs" role="tablist" aria-label="選擇動畫">
+          <button type="button" role="tab" class="btn" data-ls-tab="cournot">① Cournot 收斂</button>
+          <button type="button" role="tab" class="btn" data-ls-tab="bertrand">② Bertrand 削價</button>
+          <button type="button" role="tab" class="btn" data-ls-tab="stackelberg">③ Stackelberg 先行者</button>
+        </div></div>
+      <h3 class="ls-h" id="ls-h"></h3><p class="note ls-intro" id="ls-intro"></p>
+      <div class="ls-controls">
+        <button type="button" class="btn primary" id="ls-play">▶ 播放 Play</button>
+        <button type="button" class="btn" id="ls-step">⏭ 單步 Step</button>
+        <button type="button" class="btn" id="ls-reset">↺ 重設 Reset</button>
+        <label class="ls-lbl" for="ls-speed">速度</label>
+        <select id="ls-speed" class="ls-select"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+      </div>
+      <div class="ls-controls" id="ls-extra"></div>
+      <div class="ls-scrub"><input type="range" id="ls-scrub" min="0" max="1" value="0" step="1" aria-label="動畫進度 Progress"><span id="ls-prog" class="note"></span></div>
+      <div id="ls-view"></div>`;
+  }
+
+  function draw() {
+    if (!root || !data) return;
+    root.querySelectorAll("[data-ls-tab]").forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.lsTab === S.tab)); b.setAttribute("aria-selected", String(b.dataset.lsTab === S.tab)); });
+    const [h, intro] = INTRO[S.tab];
+    root.querySelector("#ls-h").textContent = h;
+    root.querySelector("#ls-intro").textContent = intro;
+    root.querySelector("#ls-extra").innerHTML = extraHTML();
+    const sc = root.querySelector("#ls-scrub");
+    sc.max = data.N; sc.value = S.idx;
+    root.querySelector("#ls-prog").textContent = `${S.idx} / ${data.N}`;
+    root.querySelector("#ls-play").textContent = S.playing ? "⏸ 暫停 Pause" : S.idx >= data.N ? "↻ 重播 Replay" : "▶ 播放 Play";
+    root.querySelector("#ls-view").innerHTML =
+      data.kind === "cournot" ? viewCournot() : data.kind === "bertrand" ? viewBertrand() : viewStackelberg();
+  }
+
+  function stop() { S.playing = false; if (timer) { clearTimeout(timer); timer = null; } }
+  function tick() {
+    if (!S.playing) return;
+    if (S.idx >= data.N) { stop(); draw(); return; }
+    S.idx += 1; draw();
+    if (S.idx >= data.N) { stop(); draw(); return; }
+    timer = setTimeout(tick, BASE_MS[S.tab] / S.speed);
+  }
+  function play() {
+    if (S.playing) { stop(); draw(); return; }
+    if (S.idx >= data.N) S.idx = 0;
+    S.playing = true; draw();
+    timer = setTimeout(tick, 250);
+  }
+
+  function signature() { return JSON.stringify([econInput(), S.tab, S.mode, S.lambda, S.start, S.lead]); }
+  function refresh(force) {
+    if (!root) return;
+    const sig = signature();
+    if (!force && sig === S.sig && data) return;      // 參數沒變就不打斷動畫
+    S.sig = sig; rebuild(); draw();
+  }
+
+  function mount(el) {
+    root = el; shell();
+    root.addEventListener("click", e => {
+      const t = e.target.closest("button");
+      const svg = e.target.closest("svg");
+      if (t) {
+        if (t.dataset.lsTab) { S.tab = t.dataset.lsTab; refresh(true); }
+        else if (t.dataset.lsMode) { S.mode = t.dataset.lsMode; refresh(true); }
+        else if (t.dataset.lsLambda) { S.lambda = Number(t.dataset.lsLambda); refresh(true); }
+        else if (t.dataset.lsStart) {
+          const par = Econ.normalize(econInput());
+          S.start = t.dataset.lsStart === "high" ? [par.a / par.b * 0.9, par.a / par.b * 0.05] : [0, 0]; refresh(true);
+        }
+        else if (t.dataset.lsLead) { S.lead = Number(t.dataset.lsLead); refresh(true); }
+        else if (t.id === "ls-play") play();
+        else if (t.id === "ls-step") { stop(); if (S.idx < data.N) S.idx += 1; draw(); }
+        else if (t.id === "ls-reset") { stop(); S.idx = 0; draw(); }
+        return;
+      }
+      if (svg && data && data.kind === "cournot" && svg.closest(".ls-chart")) {       // 點圖設定起點
+        const r = svg.getBoundingClientRect();
+        const par = Econ.normalize(econInput()), ax = Math.max(par.a / par.b, 1);
+        const px = ((e.clientX - r.left) / r.width) * W, py = ((e.clientY - r.top) / r.height) * H;
+        const q1 = ((px - M.l) / (W - M.l - M.r)) * ax, q2 = ((H - M.b - py) / (H - M.t - M.b)) * ax;
+        if (q1 >= 0 && q1 <= ax && q2 >= 0 && q2 <= ax) { S.start = [q1, q2]; refresh(true); }
+      }
+    });
+    root.addEventListener("input", e => {
+      if (e.target.id === "ls-scrub") { stop(); S.idx = Number(e.target.value); draw(); }
+      else if (e.target.id === "ls-speed") { S.speed = Number(e.target.value); }
+    });
+    refresh(true);
+  }
+
+  /* ---------- 自我測試（?test=1 顯示） ---------- */
+  function selfTest() {
+    const rows = [], close = (x, y, t = 0.5) => Number.isFinite(x) && Math.abs(x - y) <= t;
+    const add = (label, pass, detail) => rows.push({ group: "動畫教學 Lessons", label, pass: !!pass, detail: detail || "" });
+    const A = { a: 100, b: 1, c1: 10, c2: 10, theta: 1 };
+    const c = cournotPath(A, { start: [0, 0], mode: "sequential" });
+    const last = c.path[c.path.length - 1];
+    add("動畫 1：輪流更新從 (0,0) 收斂到 (30,30)", c.converged && close(last.x1, 30) && close(last.x2, 30), `步數 ${c.steps}，終點 (${f2(last.x1)}, ${f2(last.x2)})`);
+    const cs = cournotPath(A, { start: [0, 0], mode: "simultaneous" });
+    add("動畫 1：同時更新 15 步內收斂", cs.converged && cs.steps <= 15, `步數 ${cs.steps}`);
+    const c3 = cournotPath({ ...A, theta: 0.5 }, { start: [80, 5], mode: "sequential" });
+    const l3 = c3.path[c3.path.length - 1];
+    add("動畫 1：差異化 θ=0.5 從 (80,5) 收斂到 (36,36)", c3.converged && close(l3.x1, 36) && close(l3.x2, 36), `(${f2(l3.x1)}, ${f2(l3.x2)})`);
+    const u = undercutPath(A), ul = u.path[u.path.length - 1];
+    add("動畫 2：削價終點 = 邊際成本 10，利潤 0", u.converged && close(ul.x1, 10, 1e-6) && close(ul.x2, 10, 1e-6) && homoOutcome(u.par, ul.x1, ul.x2).pi1 === 0, `步數 ${u.steps}，價格 ${f2(ul.x1)}`);
+    const u2 = undercutPath({ ...A, c2: 25 }), u2l = u2.path[u2.path.length - 1];
+    add("動畫 2：成本 10 / 25，低成本廠商壓到高成本廠商成本附近", u2.converged && close(Math.min(u2l.x1, u2l.x2), 24, 1.01), `價格 ${f2(u2l.x1)} / ${f2(u2l.x2)}`);
+    const s = stackSweep(A, 1);
+    add("動畫 3：領導者利潤最高點 ≈ Stackelberg 均衡 q_L = 45", close(s.pts[s.best].qL, s.eq.q1, 1.0) && close(s.pts[s.best].piL, s.eq.pi1, 5), `掃描最佳 q_L ${f2(s.pts[s.best].qL)}、理論 ${f2(s.eq.q1)}`);
+    add("動畫 3：領導者利潤高於 Cournot（先行者優勢）", s.eq.pi1 > s.co.pi1, `${f2(s.eq.pi1)} > ${f2(s.co.pi1)}`);
+    const s2 = stackSweep({ ...A, c2: 25 }, 2);
+    add("動畫 3：廠商 2 當領導者也一致", close(s2.pts[s2.best].qL, s2.eq.q2, 1.0), `掃描 ${f2(s2.pts[s2.best].qL)}、理論 ${f2(s2.eq.q2)}`);
+    return { rows, passed: rows.filter(r => r.pass).length, total: rows.length };
+  }
+
+  return { mount, refresh, selfTest, cournotPath, undercutPath, stackSweep, homoOutcome };
+})();
+
+/* =====================================================================
+ * Render — 讀 State 繪製；任何變動只呼叫 Render.schedule()
+ * ===================================================================== */
+const Render = (() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const fmt = x => {
+    if (!Number.isFinite(x)) return "—";
+    const v = Math.abs(x) < 0.005 ? 0 : x;
+    return v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  const fmtInt = x => (Number.isFinite(x) ? Math.round(x).toLocaleString("en-US") : "—");
+  const fmtParam = v => String(Math.round(v * 1000) / 1000);
+  const linspace = (lo, hi, n) => Array.from({ length: n }, (_, k) => lo + ((hi - lo) * k) / (n - 1));
+  const sortedUnique = arr => [...new Set(arr.map(v => +v.toFixed(9)))].sort((x, y) => x - y);
+  const katexOk = () => State.cdn.katex === "ok" && typeof window.katex !== "undefined";
+  const plotlyOk = () => State.cdn.plotly === "ok" && typeof window.Plotly !== "undefined";
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const isLimit = r => !!(r.corner && r.corner.computed === false);
+  const alpha = (hex, a) => {
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    return m ? `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})` : hex;
+  };
+
+  let pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; render(); });
+  }
+
+  function solveAll() {
+    const inp = econInput();
+    return {
+      cournot: Econ.cournot(inp), bertrand: Econ.bertrand(inp), stackelberg: Econ.stackelberg(inp),
+      pc: Econ.perfectCompetition(inp), monopoly: Econ.monopoly(inp)
+    };
+  }
+
+  function render() {
+    const res = solveAll();
+    renderControls();
+    renderCdnBanner();
+    renderResults(res);
+    renderReaction(res);
+    renderComparison(res);
+    renderTheory();
+    renderSubst();
+    Lessons.refresh();
+    State.animateNext = false;
+  }
+
+  /* ---------- 控制欄 Controls ---------- */
+  function renderControls() {
+    for (const def of PARAM_DEFS) {
+      const wrap = document.querySelector(`.param[data-key="${def.key}"]`);
+      if (!wrap) continue;
+      wrap.hidden = !!def.diffOnly && State.product === "homo";
+      const rng = $(`rng-${def.key}`), num = $(`num-${def.key}`);
+      const v = getParam(def.key), lo = def.min(), hi = def.max();
+      rng.min = lo; rng.max = hi; rng.step = def.step;
+      rng.value = v;
+      rng.style.setProperty("--pct", `${hi > lo ? ((Math.min(Math.max(v, lo), hi) - lo) / (hi - lo)) * 100 : 0}%`);
+      if (document.activeElement !== num) num.value = fmtParam(v);
+      wrap.querySelector(".min").textContent = fmtParam(lo);
+      wrap.querySelector(".max").textContent = fmtParam(hi);
+    }
+    const sel = (q, attr, val) => document.querySelectorAll(q).forEach(b => b.setAttribute(attr, String(val(b))));
+    sel("[data-model]", "aria-selected", b => b.dataset.model === State.model);
+    sel("[data-product]", "aria-pressed", b => b.dataset.product === State.product);
+    sel("[data-preset]", "aria-pressed", b => b.dataset.preset === State.preset);
+    sel("[data-view]", "aria-pressed", b => b.dataset.view === State.compareView);
+    sel("[data-leader]", "aria-pressed", b => Number(b.dataset.leader) === State.leader);
+    $("leader-group").hidden = State.model !== "stackelberg";
+    const iso = $("iso-toggle"), allowed = isoAllowed();
+    iso.disabled = !allowed;
+    iso.setAttribute("aria-pressed", String(allowed && State.showIso));
+    iso.title = allowed ? "在反應曲線圖上顯示等利潤曲線 Isoprofit curves"
+      : (State.model === "bertrand" && State.product === "homo"
+        ? "同質 Bertrand 的利潤函數不連續，沒有平滑的等利潤曲線"
+        : "θ = 0 時對手策略不影響利潤，等利潤曲線退化為直線");
+    $("controls").classList.toggle("collapsed", State.controlsCollapsed);
+    $("controls-toggle").setAttribute("aria-expanded", String(!State.controlsCollapsed));
+  }
+
+  /* ---------- CDN 備援提示 ---------- */
+  function renderCdnBanner() {
+    const failed = [];
+    if (State.cdn.katex === "fail") failed.push("KaTeX（公式改以純文字顯示 Formulas shown as plain text）");
+    if (State.cdn.plotly === "fail") failed.push("Plotly（反應曲線與市場圖改用簡化圖、長條圖改看表格 Simplified charts）");
+    const el = $("cdn-banner");
+    el.hidden = failed.length === 0;
+    if (failed.length) {
+      el.innerHTML = `<strong>外部函式庫載入失敗 External library failed to load：</strong>${failed.map(esc).join("；")}。` +
+        `數值計算與其他功能不受影響 All calculations still work.`;
+    }
+  }
+
+  /* ---------- 結果面板 F05 ＋ 角解提示 F07 ＋ Lerner / HHI F17 ---------- */
+  function renderResults(res) {
+    const r = res[State.model];
+    const limit = isLimit(r);
+    const leaderTxt = State.model === "stackelberg" ? `，領導者＝廠商 ${State.leader}` : "";
+    $("results-title").innerHTML = `結果 Results <span class="en">— ${esc(MODELS[State.model].zh)}${State.product === "diff" ? "（差異化）" : ""}${leaderTxt}</span>`;
+
+    const banner = $("corner-banner");
+    banner.hidden = !r.corner;
+    if (r.corner) banner.innerHTML = `${esc(r.corner.msgZh)}<span class="en-line">${esc(r.corner.msgEn)}</span>`;
+
+    const rows = [];
+    if (State.product === "homo") rows.push(["價格 Price", "P", r.p1, 0]);
+    else rows.push(["廠商 1 價格", "P₁", r.p1, 1], ["廠商 2 價格", "P₂", r.p2, 2]);
+    rows.push(
+      ["廠商 1 產量 Output", "q₁", r.q1, 1, "top"], ["廠商 2 產量 Output", "q₂", r.q2, 2], ["總產量 Total", "Q", r.q1 + r.q2, 0],
+      ["廠商 1 利潤 Profit", "π₁", r.pi1, 1, "top"], ["廠商 2 利潤 Profit", "π₂", r.pi2, 2],
+      ["消費者剩餘 Consumer surplus", "CS", r.cs, 0, "top"], ["社會福利 Social welfare", "SW", r.sw, 0], ["無謂損失 Deadweight loss", "DWL", r.dwl, 0],
+      ["廠商 1 勒納指數 Lerner", "L₁", r.lerner.l1, 1, "top"], ["廠商 2 勒納指數 Lerner", "L₂", r.lerner.l2, 2],
+      ["赫芬達爾指數 HHI", "HHI", r.hhi, 0, null, "int"]
+    );
+    const exited = firm => !limit && firm > 0 && r[`q${firm}`] === 0;
+    $("results").innerHTML = rows.map(([label, sym, val, firm, top, kind]) => {
+      const cls = [exited(firm) ? "exited" : "", top ? "group-top" : ""].filter(Boolean).join(" ");
+      const dot = firm ? `<span class="dot f${firm}"></span>` : "";
+      return `<dt class="${cls}">${dot}${esc(label)} <span class="sym">${esc(sym)}</span></dt>` +
+             `<dd class="${cls}">${limit ? "—" : kind === "int" ? fmtInt(val) : fmt(val)}</dd>`;
+    }).join("");
+  }
+
+  /* ---------- 通用繪圖：同一份規格可畫成 Plotly 或 SVG ----------
+   * spec = { xs, ys, xTitle, yTitle, xRange, yRange,
+   *          lines:[{name,color,dash,width,x,y,customdata,hover}], polys:[{name,color,x,y}],
+   *          points:[{name,x,y,symbol,size,color,open,text}], note }
+   * 顏色一律用 CSS 變數名稱（如 "--f1"），深色模式自動切換。 */
+  const PLOT_CONFIG = { responsive: true, displayModeBar: false };
+  const TRANSITION_MS = 300;
+
+  function baseLayout(el) {
+    return {
+      height: el.clientHeight || undefined,
+      margin: { l: 56, r: 12, t: 8, b: 48 },
+      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+      font: { family: getComputedStyle(document.body).fontFamily, color: css("--fg"), size: 12 },
+      hoverlabel: { font: { size: 12 } },
+      legend: { orientation: "h", x: 0, xanchor: "left", y: -0.16, yanchor: "top", font: { size: 11 } },
+      hovermode: "closest"
+    };
+  }
+
+  function axis(title, range) {
+    return {
+      title: { text: title, standoff: 8 }, range, fixedrange: true,
+      gridcolor: css("--grid"), zerolinecolor: css("--line"), linecolor: css("--line"), automargin: true
+    };
+  }
+
+  function specTraces(spec) {
+    const traces = [];
+    for (const p of spec.polys) {
+      traces.push({ type: "scatter", mode: "lines", name: p.name, x: p.x, y: p.y, fill: "toself",
+        fillcolor: alpha(css(p.color), 0.22), line: { width: 0, color: css(p.color) },
+        hovertemplate: `<b>${p.name}</b><extra></extra>` });
+    }
+    for (const l of spec.lines) {
+      traces.push({ type: "scatter", mode: "lines", name: l.name, x: l.x, y: l.y, connectgaps: false,
+        line: { color: css(l.color), width: l.width || 2.5, dash: l.dash || "solid" }, customdata: l.customdata,
+        hovertemplate: l.hover || `<b>${l.name}</b><br>${spec.xs} = %{x:,.2f}<br>${spec.ys} = %{y:,.2f}<extra></extra>` });
+    }
+    for (const p of spec.points) {
+      traces.push({ type: "scatter", mode: "markers", name: p.name, x: [p.x], y: [p.y], text: [p.text],
+        hovertemplate: "%{text}<extra></extra>",
+        marker: p.open
+          ? { size: p.size, symbol: p.symbol, color: "rgba(0,0,0,0)", line: { color: css(p.color), width: 2 } }
+          : { size: p.size, symbol: p.symbol, color: css(p.color), line: { color: css("--bg"), width: 1.5 } } });
+    }
+    return traces;
+  }
+
+  // 過渡動畫期間 Plotly 會丟掉新的 react（座標軸停在舊範圍），
+  // 所以動畫中進來的重繪先排隊；動畫結束後一律以不帶動畫的 react 套用最新狀態。
+  function drawPlotly(el, traces, layout, animate) {
+    if (el.dataset.mode !== "plotly") { el.innerHTML = ""; el.dataset.mode = "plotly"; }
+    const st = el._anim || (el._anim = { busy: false, latest: null, sig: "" });
+    // 圖形結構（trace 數量、種類、標記形狀）改變時不做動畫：
+    // Plotly 會把圓形路徑內插成菱形，產生不合法的 SVG 路徑
+    const sig = traces.map(t => `${t.type}:${t.mode}:${t.marker ? t.marker.symbol : ""}:${t.fill || ""}`).join("|");
+    if (sig !== st.sig) animate = false;
+    st.sig = sig;
+    st.latest = { traces, layout };
+    if (st.busy) return;
+    if (!animate) { window.Plotly.react(el, traces, layout, PLOT_CONFIG); return; }
+    st.busy = true;
+    window.Plotly.react(el, traces, { ...layout, transition: { duration: TRANSITION_MS, easing: "cubic-in-out" } }, PLOT_CONFIG);
+    setTimeout(() => {
+      st.busy = false;
+      if (el.dataset.mode === "plotly" && st.latest) window.Plotly.react(el, st.latest.traces, st.latest.layout, PLOT_CONFIG);
+    }, TRANSITION_MS + 60);
+  }
+
+  function clearPlotly(el) {
+    if (el.dataset.mode === "plotly" && window.Plotly) window.Plotly.purge(el);
+    if (el._anim) el._anim = { busy: false, latest: null };
+  }
+
+  function drawSpec(el, spec, animate) {
+    if (plotlyOk()) {
+      const layout = { ...baseLayout(el), xaxis: axis(spec.xTitle, spec.xRange), yaxis: axis(spec.yTitle, spec.yRange) };
+      drawPlotly(el, specTraces(spec), layout, animate);
+    } else {
+      clearPlotly(el);
+      el.dataset.mode = "svg";
+      el.innerHTML = svgSpec(spec);
+    }
+  }
+
+  function niceTicks(lo, hi) {
+    const raw = (hi - lo) / 4;
+    if (!(raw > 0)) return [lo];
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * pow).find(s => s >= raw) || raw;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
+    return out;
+  }
+
+  const SVG_SHAPES = {
+    circle: (x, y, s) => `<circle cx="${x}" cy="${y}" r="${s / 2}"/>`,
+    square: (x, y, s) => `<rect x="${x - s / 2.4}" y="${y - s / 2.4}" width="${s / 1.2}" height="${s / 1.2}"/>`,
+    diamond: (x, y, s) => `<rect x="${x - s / 2.6}" y="${y - s / 2.6}" width="${s / 1.3}" height="${s / 1.3}" transform="rotate(45 ${x} ${y})"/>`,
+    "triangle-up": (x, y, s) => `<polygon points="${x},${y - s / 1.8} ${x - s / 2},${y + s / 2.6} ${x + s / 2},${y + s / 2.6}"/>`,
+    cross: (x, y, s) => `<path d="M${x - s / 2} ${y}H${x + s / 2}M${x} ${y - s / 2}V${y + s / 2}" stroke-width="3"/>`,
+    x: (x, y, s) => `<path d="M${x - s / 2.5} ${y - s / 2.5}L${x + s / 2.5} ${y + s / 2.5}M${x - s / 2.5} ${y + s / 2.5}L${x + s / 2.5} ${y - s / 2.5}" stroke-width="3"/>`
+  };
+
+  // 備援：Plotly 載入失敗時，以原生 SVG 畫同一份規格
+  function svgSpec(spec) {
+    const W = 520, H = 380, m = { l: 56, r: 16, t: 12, b: 48 };
+    const [x0, x1] = spec.xRange, [y0, y1] = spec.yRange;
+    const sx = v => m.l + ((v - x0) / (x1 - x0)) * (W - m.l - m.r);
+    const sy = v => H - m.b - ((v - y0) / (y1 - y0)) * (H - m.t - m.b);
+    const fmtTick = v => (Math.abs(v) >= 100 ? Math.round(v) : +v.toFixed(2));
+    const xt = niceTicks(Math.max(x0, 0), x1), yt = niceTicks(Math.max(y0, 0), y1);
+    const grid = xt.map(t => `<line x1="${sx(t)}" x2="${sx(t)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--grid)"/>` +
+        `<text x="${sx(t)}" y="${H - m.b + 16}" text-anchor="middle" font-size="11" fill="var(--muted)">${fmtTick(t)}</text>`).join("") +
+      yt.map(t => `<line x1="${m.l}" x2="${W - m.r}" y1="${sy(t)}" y2="${sy(t)}" stroke="var(--grid)"/>` +
+        `<text x="${m.l - 6}" y="${sy(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtTick(t)}</text>`).join("");
+    const polys = spec.polys.map(p => `<polygon points="${p.x.map((x, k) => `${sx(x).toFixed(1)},${sy(p.y[k]).toFixed(1)}`).join(" ")}" ` +
+      `fill="var(${p.color})" fill-opacity="0.22" clip-path="url(#sv-clip)"><title>${esc(p.name)}</title></polygon>`).join("");
+    const dashes = { dash: "7 5", dot: "2 4", solid: "" };
+    const lines = spec.lines.map(l => {
+      const segs = []; let cur = [];
+      l.x.forEach((x, k) => {
+        const y = l.y[k];
+        if (x === null || y === null || !Number.isFinite(x) || !Number.isFinite(y)) { if (cur.length > 1) segs.push(cur); cur = []; }
+        else cur.push(`${sx(x).toFixed(1)},${sy(y).toFixed(1)}`);
+      });
+      if (cur.length > 1) segs.push(cur);
+      return segs.map(sg => `<polyline points="${sg.join(" ")}" fill="none" stroke="var(${l.color})" stroke-width="${l.width || 2.5}" ` +
+        `stroke-dasharray="${dashes[l.dash || "solid"]}" clip-path="url(#sv-clip)"><title>${esc(l.name)}</title></polyline>`).join("");
+    }).join("");
+    const marks = spec.points.map(p => {
+      const shape = (SVG_SHAPES[p.symbol] || SVG_SHAPES.circle)(sx(p.x), sy(p.y), p.size);
+      const paint = p.open || p.symbol === "cross" || p.symbol === "x"
+        ? `fill="none" stroke="var(${p.color})" stroke-width="2"` : `fill="var(${p.color})" stroke="var(--bg)" stroke-width="1.5"`;
+      return `<g ${paint}><title>${esc(String(p.text).replace(/<br>/g, "，").replace(/<\/?b>/g, ""))}</title>${shape}</g>`;
+    }).join("");
+    const legend = [
+      ...spec.polys.map(p => `<span><span class="dot" style="background:var(${p.color});opacity:.5"></span>${esc(p.name)}</span>`),
+      ...spec.lines.map(l => `<span><span class="dot" style="background:var(${l.color})"></span>${esc(l.name)}</span>`),
+      ...spec.points.map(p => `<span>${p.open ? "○" : "◆"} ${esc(p.name)}</span>`)
+    ].join("　");
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="calc(100% - 44px)" role="img" aria-label="${esc(spec.xTitle)}（簡化圖）" style="display:block">
+      <defs><clipPath id="sv-clip"><rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/></clipPath></defs>
+      ${grid}
+      <line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--muted)"/>
+      <line x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)"/>
+      <text x="${(m.l + W - m.r) / 2}" y="${H - 8}" text-anchor="middle" font-size="12" fill="var(--fg)">${esc(spec.xTitle)}</text>
+      <text x="14" y="${(m.t + H - m.b) / 2}" text-anchor="middle" font-size="12" fill="var(--fg)" transform="rotate(-90 14 ${(m.t + H - m.b) / 2})">${esc(spec.yTitle)}</text>
+      ${polys}${lines}${marks}
+    </svg><div class="note" style="margin-top:4px">${legend}</div>`;
+  }
+
+  /* ---------- 反應曲線 F04 ＋ 等利潤曲線 F16 ---------- */
+  function reactionSpec(res) {
+    const inp = econInput();
+    const par = Econ.normalize(inp);
+    const { a, b, g, c1, c2 } = par;
+    const r = res[State.model];
+    const L = par.leader, F = 3 - L;
+    const spec = { lines: [], polys: [], points: [], note: "" };
+    const eqName = { cournot: "Cournot–Nash 均衡", bertrand: "Bertrand 均衡", stackelberg: "Stackelberg 均衡" }[State.model];
+    const ptText = (name, x, y, pi, xs, ys) =>
+      `<b>${name}</b><br>${xs} = ${fmt(x)}<br>${ys} = ${fmt(y)}<br>π₁ = ${fmt(pi[0])}<br>π₂ = ${fmt(pi[1])}`;
+    let M, isoNote = "";
+
+    if (State.model === "bertrand") {
+      M = a;
+      spec.xs = "p₁"; spec.ys = "p₂";
+      spec.xTitle = "廠商 1 價格 p₁"; spec.yTitle = "廠商 2 價格 p₂";
+      const extras = [c1, c2, (a + c1) / 2, (a + c2) / 2].flatMap(v => [v - 0.011, v, v + 1e-6]);
+      const grid = sortedUnique([...linspace(0, M, 241), ...extras.filter(v => v >= 0 && v <= M)]);
+      const br = par.homo
+        ? (i, p) => Econ.reaction.priceHomo(inp, i, p)
+        : (i, p) => Econ.reaction.priceDiff(inp, i, p);
+      spec.lines.push({ name: "廠商 1 反應函數 BR₁(p₂)", color: "--f1", x: grid.map(p => br(1, p)), y: grid });
+      spec.lines.push({ name: "廠商 2 反應函數 BR₂(p₁)", color: "--f2", x: grid, y: grid.map(p => br(2, p)) });
+      if (!isLimit(r)) {
+        let x = r.p1, y = r.p2;
+        if (par.homo && Math.abs(c1 - c2) > 1e-9) {          // 同質：高成本廠商的報價為 max(P, c_H)
+          const P = r.p1, pH = Math.max(P, Math.max(c1, c2));
+          if (c1 < c2) y = pH; else x = pH;
+        }
+        spec.points.push({ name: eqName, x, y, symbol: "diamond", size: 15, color: "--eq", text: ptText(eqName, x, y, [r.pi1, r.pi2], "p₁", "p₂") });
+      }
+      spec.note = par.homo
+        ? "同質 Bertrand 的反應函數是折線：對手價格高於自己成本時削價 ε = 0.01 搶下整個市場；高於獨占價時改訂獨占價。"
+        : "價格反應曲線正斜率：對手漲價，我也跟著漲，即策略互補 Strategic complements。";
+      if (State.showIso && isoAllowed() && !isLimit(r)) {
+        for (const i of [1, 2]) {
+          const line = isoLine(inp, "p", i, r[`pi${i}`], r[`p${i}`] > 0 && r[`q${i}`] > 0, M, `廠商 ${i} 等利潤曲線 π${i === 1 ? "₁" : "₂"} = ${fmt(r[`pi${i}`])}`, `--f${i}`, "dot");
+          if (line) spec.lines.push(line);
+        }
+        isoNote = "點線是通過均衡點的等利潤曲線：每家廠商的等利潤曲線在自己的反應曲線上切線水平（或垂直），代表在對手價格給定下利潤已最大。";
+      }
+    } else {
+      M = Math.max((a - Math.min(c1, c2)) / b, 1e-6) * 1.05;
+      spec.xs = "q₁"; spec.ys = "q₂";
+      spec.xTitle = "廠商 1 產量 q₁"; spec.yTitle = "廠商 2 產量 q₂";
+      const kinks = g > 0 ? [(a - c1) / g, (a - c2) / g] : [];
+      const grid = sortedUnique([...linspace(0, M, 241), ...kinks.filter(v => v > 0 && v < M)]);
+      const R = (i, q) => Econ.reaction.quantity(inp, i, q);
+      const profits = (q1, q2) => [(a - b * q1 - g * q2 - c1) * q1, (a - b * q2 - g * q1 - c2) * q2];
+      const x1 = grid.map(q2 => R(1, q2)), y2 = grid.map(q1 => R(2, q1));
+      const hov = name => `<b>${name}</b><br>q₁ = %{x:,.2f}<br>q₂ = %{y:,.2f}<br>π₁ = %{customdata[0]:,.2f}<br>π₂ = %{customdata[1]:,.2f}<extra></extra>`;
+      const n1 = "廠商 1 反應函數 R₁(q₂)", n2 = "廠商 2 反應函數 R₂(q₁)";
+      spec.lines.push({ name: n1, color: "--f1", x: x1, y: grid, customdata: grid.map((q2, k) => profits(x1[k], q2)), hover: hov(n1) });
+      spec.lines.push({ name: n2, color: "--f2", x: grid, y: y2, customdata: grid.map((q1, k) => profits(q1, y2[k])), hover: hov(n2) });
+      if (State.model === "stackelberg") {
+        const c = res.cournot;
+        spec.points.push({ name: "Cournot 均衡（對照）", x: c.q1, y: c.q2, symbol: "circle", size: 12, color: "--muted", open: true,
+          text: ptText("Cournot 均衡（對照）", c.q1, c.q2, [c.pi1, c.pi2], "q₁", "q₂") });
+      }
+      spec.points.push({ name: eqName, x: r.q1, y: r.q2, symbol: "diamond", size: 15, color: "--eq", text: ptText(eqName, r.q1, r.q2, [r.pi1, r.pi2], "q₁", "q₂") });
+      spec.note = State.model === "cournot"
+        ? "兩條反應曲線的交點就是 Nash 均衡。斜率為負：對手多產，我就少產，即策略替代 Strategic substitutes。"
+        : `領導者（廠商 ${L}）在追隨者（廠商 ${F}）的反應曲線上挑利潤最大的點；空心點為 Cournot 均衡，可看出領導者多產、追隨者少產。`;
+      if (State.showIso && isoAllowed()) {
+        if (State.model === "cournot") {
+          for (const i of [1, 2]) {
+            const line = isoLine(inp, "q", i, r[`pi${i}`], r[`q${i}`] > 0, M, `廠商 ${i} 等利潤曲線 π${i === 1 ? "₁" : "₂"} = ${fmt(r[`pi${i}`])}`, `--f${i}`, "dot");
+            if (line) spec.lines.push(line);
+          }
+          isoNote = "點線是通過 Nash 點的等利潤曲線：每家廠商的等利潤曲線在自己的反應曲線上達到頂點（切線水平／垂直）。";
+        } else {
+          const piS = r[`pi${L}`], piC = res.cournot[`pi${L}`];
+          const s = isoLine(inp, "q", L, piS, r[`q${L}`] > 0, M, `領導者等利潤 π${L === 1 ? "₁" : "₂"} = ${fmt(piS)}（Stackelberg）`, `--f${L}`, "dash");
+          const c = isoLine(inp, "q", L, piC, res.cournot[`q${L}`] > 0, M, `領導者等利潤 π${L === 1 ? "₁" : "₂"} = ${fmt(piC)}（Cournot）`, "--muted", "dot");
+          if (s) spec.lines.push(s);
+          if (c) spec.lines.push(c);
+          isoNote = r[`q${F}`] > 0
+            ? "虛線是領導者通過 Stackelberg 點的等利潤曲線，正好與追隨者的反應曲線相切；點線通過 Cournot 點，利潤較低。"
+            : "追隨者退出（角解），領導者的等利潤曲線不再與追隨者反應曲線相切。";
+        }
+      }
+    }
+    if (State.showIso && !isoAllowed()) {
+      isoNote = State.model === "bertrand" && State.product === "homo"
+        ? "同質 Bertrand 的利潤函數不連續，沒有平滑的等利潤曲線。"
+        : "θ = 0 時對手策略不影響利潤，等利潤曲線退化為直線，因此不畫。";
+    }
+    if (isLimit(r)) spec.note = "此參數組合屬於 limit pricing 區間，本模擬器不計算均衡點。 " + spec.note;
+    if (isoNote) spec.note += " " + isoNote;
+    spec.xRange = [-0.02 * M, M * 1.02];
+    spec.yRange = [-0.02 * M, M * 1.02];
+    return spec;
+  }
+
+  // 一條等利潤曲線：沿自己的策略取樣，解出對手策略；超出畫面的點設為 null 讓線斷開
+  function isoLine(inp, space, firm, piBar, ok, M, name, color, dash) {
+    if (!ok || !(piBar > 1e-9)) return null;
+    const ci = firm === 1 ? inp.c1 : inp.c2;
+    const N = 400;
+    const own = space === "q"
+      ? linspace(M / N, M, N)
+      : linspace(ci + (M - ci) / N, M, N);
+    const other = own.map(v => {
+      const o = space === "q" ? Iso.quantity(inp, firm, piBar, v) : Iso.price(inp, firm, piBar, v);
+      return Number.isFinite(o) && o >= -0.1 * M && o <= 1.15 * M ? o : null;
+    });
+    if (other.filter(v => v !== null).length < 2) return null;
+    const pts = own.map((v, k) => (other[k] === null ? [null, null] : (firm === 1 ? [v, other[k]] : [other[k], v])));
+    return { name, color, dash, width: 1.8, x: pts.map(p => p[0]), y: pts.map(p => p[1]) };
+  }
+
+  function renderReaction(res) {
+    const spec = reactionSpec(res);
+    $("rc-title").innerHTML = State.model === "bertrand"
+      ? `價格反應曲線 <span class="en">Price reaction curves (p₁, p₂)</span>`
+      : `數量反應曲線 <span class="en">Quantity reaction curves (q₁, q₂)</span>`;
+    $("rc-note").textContent = spec.note;
+    drawSpec($("reaction-chart"), spec, State.animateNext);
+  }
+
+  /* ---------- 市場結構比較 F06 ＋ 市場圖 F15 ---------- */
+  const COLS = [
+    { key: "cournot", head: "Cournot" },
+    { key: "bertrand", head: "Bertrand" },
+    { key: "stackelberg", head: "Stackelberg" },
+    { key: "pc", head: "完全競爭<br><small>Perfect comp.</small>", plain: "完全競爭", bench: true },
+    { key: "monopoly", head: "獨占<br><small>Monopoly</small>", plain: "獨占", bench: true }
+  ];
+  let lastScrolledModel = null;
+
+  function renderComparison(res) {
+    const homo = State.product === "homo";
+    const rows = [
+      ...(homo ? [["價格", "P", r => r.p1, 0]] : [["價格", "P₁", r => r.p1, 1], ["價格", "P₂", r => r.p2, 2]]),
+      ["產量", "q₁", r => r.q1, 1], ["產量", "q₂", r => r.q2, 2], ["總產量", "Q", r => r.q1 + r.q2, 0],
+      ["利潤", "π₁", r => r.pi1, 1], ["利潤", "π₂", r => r.pi2, 2],
+      ["消費者剩餘", "CS", r => r.cs, 0], ["社會福利", "SW", r => r.sw, 0], ["無謂損失", "DWL", r => r.dwl, 0]
+    ];
+    const head = `<tr><th scope="col"><span class="m-full">指標 Metric</span><span class="m-short">指標</span></th>${COLS.map(c =>
+      `<th class="${c.key === State.model ? "current" : ""}${c.bench ? " bench" : ""}" scope="col">${c.head}</th>`).join("")}</tr>`;
+    const body = rows.map(([zh, sym, get, firm]) => `<tr><th scope="row"><span class="m-full">${esc(zh)} </span>${esc(sym)}</th>${COLS.map(c => {
+      const r = res[c.key];
+      const zero = firm > 0 && r[`q${firm}`] === 0;
+      const cls = [c.key === State.model ? "current" : "", zero ? "zero" : ""].filter(Boolean).join(" ");
+      return `<td class="${cls}">${isLimit(r) ? "—" : fmt(get(r))}</td>`;
+    }).join("")}</tr>`).join("");
+    $("cmp-table").innerHTML = `<thead>${head}</thead><tbody>${body}</tbody>`;
+
+    // 手機：每欄寬 =（可視寬度 − 固定第一欄）/ 2，一次剛好看到兩欄完整的資料，
+    // 5 欄 = 2.5 個畫面，捲到底也落在欄位邊界，任何位置都不會出現被蓋住一半的欄
+    const wrap = $("cmp-wrap"), table = $("cmp-table");
+    const firstTh = table.querySelector("thead th");
+    const mobile = window.matchMedia && window.matchMedia("(max-width: 767px)").matches;
+    if (mobile && firstTh) {
+      const fw = firstTh.getBoundingClientRect().width;
+      const colw = Math.max(80, (wrap.clientWidth - fw) / 2);
+      table.style.setProperty("--colw", `${colw}px`);
+      table.style.width = `${fw + colw * COLS.length}px`;
+      wrap.style.scrollPaddingLeft = `${fw}px`;
+    } else {
+      table.style.removeProperty("--colw"); table.style.width = ""; wrap.style.scrollPaddingLeft = "";
+    }
+    // 模型切換時把目前模型欄捲到可見處
+    if (lastScrolledModel !== State.model && wrap.scrollWidth > wrap.clientWidth + 1) {
+      const th = $("cmp-table").querySelector("thead th.current"), first = $("cmp-table").querySelector("thead th");
+      if (th && first) wrap.scrollLeft = Math.max(0, th.offsetLeft - first.offsetWidth);
+      lastScrolledModel = State.model;
+    } else if (wrap.scrollWidth <= wrap.clientWidth + 1) lastScrolledModel = State.model;
+
+    const el = $("cmp-chart"), note = $("cmp-chart-note"), mnote = $("market-note");
+    el.classList.toggle("tall", State.compareView === "market");
+    if (State.compareView === "market") {
+      const spec = Market.build(econInput(), res, State.model);
+      el.hidden = false; note.hidden = true;
+      mnote.hidden = false; mnote.textContent = spec.note;
+      drawSpec(el, spec, false);
+      return;
+    }
+    mnote.hidden = true;
+    if (!plotlyOk()) {
+      clearPlotly(el);
+      el.innerHTML = ""; el.dataset.mode = "none";
+      el.hidden = true;
+      note.hidden = State.cdn.plotly !== "fail";
+      return;
+    }
+    el.hidden = false; note.hidden = true;
+    const x = COLS.map(c => c.plain || c.head);
+    const opacity = COLS.map(c => (c.key === State.model ? 1 : c.bench ? 0.4 : 0.6));
+    const val = get => COLS.map(c => (isLimit(res[c.key]) ? null : get(res[c.key])));
+    const bar = (name, y, color) => ({
+      type: "bar", name, x, y, marker: { color, opacity },
+      hovertemplate: `<b>%{x}</b><br>${name} = %{y:,.2f}<extra></extra>`
+    });
+    const traces = State.compareView === "welfare"
+      ? [bar("消費者剩餘 CS", val(r => r.cs), css("--cs")),
+         bar("生產者剩餘 PS = π₁ + π₂", val(r => r.pi1 + r.pi2), css("--ps")),
+         bar("社會福利 SW", val(r => r.sw), css("--sw"))]
+      : [...(homo ? [bar("價格 P", val(r => r.p1), css("--accent"))]
+                  : [bar("價格 P₁", val(r => r.p1), css("--f1")), bar("價格 P₂", val(r => r.p2), css("--f2"))]),
+         bar("總產量 Q", val(r => r.q1 + r.q2), css("--sw"))];
+    const layout = {
+      ...baseLayout(el), barmode: "group", bargap: 0.25,
+      margin: { l: 56, r: 12, t: 8, b: 40 },
+      legend: { orientation: "h", x: 0, y: 1.02, yanchor: "bottom", font: { size: 11 } },
+      xaxis: { fixedrange: true, linecolor: css("--line"), automargin: true },
+      yaxis: { fixedrange: true, gridcolor: css("--grid"), zerolinecolor: css("--line"), rangemode: "tozero", automargin: true }
+    };
+    drawPlotly(el, traces, layout, false);
+  }
+
+  /* ---------- 理論面板 F08 ＋ 代入數值 F12 ---------- */
+  let theoryKey = "", substKey = "";
+  function tex(texStr, plainText, display = true) {
+    if (katexOk()) {
+      try { return window.katex.renderToString(texStr, { displayMode: display, throwOnError: false }); }
+      catch (e) { /* 改用純文字 */ }
+    }
+    return `<div class="plain">${esc(plainText)}</div>`;
+  }
+  const formulaHTML = f => `<div class="formula"><div class="cap">${esc(f.cap)}</div>${tex(f.tex, f.text)}</div>` +
+    (f.eq ? `<div class="subst" id="subst-box" aria-live="polite"></div>` : "");
+
+  function renderTheory() {
+    const key = `${State.model}|${State.product}|${State.leader}|${katexOk()}`;
+    if (key === theoryKey) return;
+    theoryKey = key;
+    substKey = "";
+    const t = Theory.get(State.model, State.product === "homo", State.leader);
+    $("theory-body").innerHTML = `
+      <div class="theory-grid">
+        <div>
+          <h3>${esc(t.title)}</h3>
+          <p><strong>直覺 Intuition：</strong>${esc(t.intuition)}</p>
+          <p><strong>假設 Assumptions：</strong></p>
+          <ul>${t.assumptions.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+          ${t.formulas.map(formulaHTML).join("")}
+          <ul>${t.notes.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <h3>比較結論 Key results</h3>
+          <ul>${Theory.keyResults.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+          <h3>對照基準 Benchmarks</h3>
+          ${Theory.benchmarks.map(formulaHTML).join("")}
+        </div>
+      </div>`;
+  }
+
+  function renderSubst() {
+    const box = $("subst-box");
+    if (!box) return;
+    const items = Subst.get(State.model, econInput());
+    const key = items.map(i => i.text + (i.note || "")).join("|") + katexOk();
+    if (key === substKey) return;
+    substKey = key;
+    box.innerHTML = `<div class="cap">代入目前數值 With current values</div>` + items.map(i =>
+      `<div class="subst-item">${tex(i.tex, i.text)}${i.note ? `<div class="subst-note">${esc(i.note)}</div>` : ""}</div>`).join("");
+  }
+
+  return { schedule, render, esc };
+})();
+
+/* =====================================================================
+ * Theory — 理論說明內容（依規格書第 4 節）。tex 給 KaTeX，text 為純文字備援；eq 標記代入數值的位置。
+ * ===================================================================== */
+const Theory = (() => {
+  const R = String.raw;
+  const demand = homo => (homo
+    ? { cap: "反需求 Inverse demand", tex: R`P = a - b\,(q_1 + q_2)`, text: "P = a − b·(q₁ + q₂)" }
+    : { cap: "反需求 Inverse demand（γ = θ·b）", tex: R`P_i = a - b\,q_i - \gamma\,q_j,\qquad \gamma = \theta\,b`, text: "P_i = a − b·q_i − γ·q_j，γ = θ·b" });
+  const profit = { cap: "利潤 Profit", tex: R`\pi_i = (P_i - c_i)\,q_i`, text: "π_i = (P_i − c_i)·q_i" };
+
+  const models = {
+    cournot: homo => ({
+      title: "Cournot 數量競爭 Quantity competition",
+      intuition: "兩家同時決定產量，各自把對手的產量視為給定。反應曲線斜率為負：對手多產，我就少產，即策略替代 Strategic substitutes。",
+      assumptions: ["同時行動 Simultaneous move", homo ? "同質產品 Homogeneous products" : "差異化產品 Differentiated products（θ < 1）",
+                    "策略變數為產量 Quantity", "固定邊際成本、無產能限制 Constant MC, no capacity limit"],
+      formulas: [
+        demand(homo), profit,
+        homo
+          ? { cap: "反應函數 Reaction function", tex: R`R_i:\; q_i = \frac{a - c_i - b\,q_j}{2b}`, text: "q_i = (a − c_i − b·q_j) / (2b)" }
+          : { cap: "反應函數 Reaction function", tex: R`R_i:\; q_i = \frac{a - c_i - \gamma\,q_j}{2b}`, text: "q_i = (a − c_i − γ·q_j) / (2b)" },
+        homo
+          ? { eq: true, cap: "均衡 Equilibrium", tex: R`q_i^{*} = \frac{a - 2c_i + c_j}{3b},\qquad P^{*} = \frac{a + c_1 + c_2}{3}`, text: "q_i* = (a − 2c_i + c_j) / (3b)，P* = (a + c₁ + c₂) / 3" }
+          : { eq: true, cap: "均衡 Equilibrium", tex: R`q_i^{*} = \frac{2b(a-c_i) - \gamma(a-c_j)}{4b^2-\gamma^2}`, text: "q_i* = [2b(a − c_i) − γ(a − c_j)] / (4b² − γ²)" },
+        { cap: "均衡利潤 Equilibrium profit", tex: R`\pi_i^{*} = b\,(q_i^{*})^2`, text: "π_i* = b·(q_i*)²" }
+      ],
+      notes: ["角解 Corner solution：若 q_j* ≤ 0，廠商 j 退出，廠商 i 以獨占產量 (a − c_i)/(2b) 生產。"]
+    }),
+    bertrand: homo => (homo ? {
+      title: "Bertrand 價格競爭（同質）Price competition, homogeneous",
+      intuition: "兩家同時訂價，價格最低者拿走整個市場，平手均分。只要兩家廠商，價格就被壓到邊際成本，即 Bertrand 悖論 Bertrand paradox。",
+      assumptions: ["同時訂價 Simultaneous pricing", "同質產品，消費者只向最低價購買", "無產能限制 No capacity constraints"],
+      formulas: [
+        { cap: "市場需求 Market demand", tex: R`Q = \frac{a - P}{b}`, text: "Q = (a − P) / b" },
+        { cap: "反應函數 Best response（分段）", tex: R`BR_i(p_j) = \begin{cases} p_i^m & p_j > p_i^m \\ p_j - \varepsilon & c_i < p_j \le p_i^m \\ c_i & p_j \le c_i \end{cases},\qquad p_i^m = \frac{a + c_i}{2}`,
+          text: "BR_i(p_j) = p_i^m（p_j > p_i^m）；p_j − ε（c_i < p_j ≤ p_i^m）；c_i（p_j ≤ c_i）；p_i^m = (a + c_i)/2" },
+        { cap: "對稱成本 Symmetric cost", tex: R`c_1 = c_2 = c \;\Rightarrow\; P^{*} = c,\quad \pi_1^{*} = \pi_2^{*} = 0`, text: "c₁ = c₂ = c ⇒ P* = c，π₁* = π₂* = 0" },
+        { eq: true, cap: "不對稱成本 Asymmetric cost（c_L < c_H < p_L^m）", tex: R`P^{*} = c_H - \varepsilon,\qquad \pi_L^{*} = (c_H - c_L)\,\frac{a - c_H}{b},\quad \pi_H^{*} = 0`,
+          text: "P* = c_H − ε，π_L* = (c_H − c_L)·(a − c_H)/b，π_H* = 0" }
+      ],
+      notes: ["若 c_H ≥ p_L^m，低成本廠商直接訂獨占價 p_L^m。", "圖上 ε 取 0.01；數值結果以 ε → 0 計算。"]
+    } : {
+      title: "Bertrand 價格競爭（差異化）Price competition, differentiated",
+      intuition: "產品不完全替代，降價只能搶走部分顧客，所以價格高於邊際成本。價格反應曲線斜率為正：對手漲價，我也跟著漲，即策略互補 Strategic complements。",
+      assumptions: ["同時訂價 Simultaneous pricing", "差異化產品 Differentiated products（θ < 1）", "無產能限制 No capacity constraints"],
+      formulas: [
+        demand(false),
+        { cap: "直接需求 Direct demand", tex: R`q_i = \frac{a(b-\gamma) - b\,p_i + \gamma\,p_j}{b^2-\gamma^2}`, text: "q_i = [a(b − γ) − b·p_i + γ·p_j] / (b² − γ²)" },
+        { cap: "反應函數 Reaction function", tex: R`R_i:\; p_i = \frac{a(b-\gamma) + b\,c_i + \gamma\,p_j}{2b}`, text: "p_i = [a(b − γ) + b·c_i + γ·p_j] / (2b)" },
+        { eq: true, cap: "均衡 Equilibrium", tex: R`p_i^{*} = \frac{2b\,k_i + \gamma\,k_j}{4b^2-\gamma^2},\qquad k_i = a(b-\gamma) + b\,c_i`, text: "p_i* = (2b·k_i + γ·k_j) / (4b² − γ²)，k_i = a(b − γ) + b·c_i" }
+      ],
+      notes: ["θ 上限 0.95：θ → 1 時直接需求的分母 b² − γ² → 0。",
+              "角解：若 q_j* ≤ 0 且廠商 i 獨占成立，廠商 j 退出；否則屬於 limit pricing 區間，本版不計算。"]
+    }),
+    stackelberg: (homo, leader) => ({
+      title: "Stackelberg 數量領導 Leader–follower",
+      intuition: "領導者先決定並承諾產量，追隨者觀察後依自己的反應函數回應。領導者預見這一點而多產、先占市場，取得先行者優勢 First-mover advantage。",
+      assumptions: ["序列行動 Sequential move", "領導者能承諾產量 Commitment", "策略變數為產量 Quantity",
+                    `目前領導者 L = 廠商 ${leader}、追隨者 F = 廠商 ${3 - leader}（可在控制欄切換）`],
+      formulas: [
+        demand(homo),
+        { cap: "追隨者反應函數 Follower's reaction", tex: R`q_F = R_F(q_L) = \max\!\left\{0,\ \frac{a - c_F - \gamma\,q_L}{2b}\right\}`, text: "q_F = max{0, (a − c_F − γ·q_L) / (2b)}" },
+        { cap: "領導者問題 Leader's problem", tex: R`\max_{q_L}\ \big(P_L(q_L, R_F(q_L)) - c_L\big)\,q_L`, text: "max over q_L：[P_L(q_L, R_F(q_L)) − c_L]·q_L" },
+        homo
+          ? { eq: true, cap: "均衡 Equilibrium", tex: R`q_L^{*} = \frac{a - 2c_L + c_F}{2b},\qquad q_F^{*} = \frac{a + 2c_L - 3c_F}{4b}`, text: "q_L* = (a − 2c_L + c_F) / (2b)，q_F* = (a + 2c_L − 3c_F) / (4b)" }
+          : { eq: true, cap: "均衡 Equilibrium", tex: R`q_L^{*} = \frac{2b(a-c_L) - \gamma(a-c_F)}{2(2b^2-\gamma^2)},\qquad q_F^{*} = R_F(q_L^{*})`, text: "q_L* = [2b(a − c_L) − γ(a − c_F)] / [2(2b² − γ²)]，q_F* = R_F(q_L*)" }
+      ],
+      notes: ["角解有兩種：追隨者產量為 0（嚇阻進入 Entry deterrence），或領導者成本過高而產量為 0。",
+              "程式同時以封閉解與數值法求領導者最適產量，兩者不一致時採數值解。",
+              "打開「等利潤曲線」可看到：領導者的等利潤曲線在 Stackelberg 點與追隨者反應曲線相切。"]
+    })
+  };
+
+  const keyResults = [
+    "同質、對稱成本時，產量 Q：完全競爭 = Bertrand > Stackelberg > Cournot > 獨占；價格順序相反。",
+    "社會福利 SW 的順序與產量相同；無謂損失 DWL = SW(完全競爭) − SW。",
+    "差異化時，Bertrand 價格低於 Cournot、社會福利較高（Singh & Vives, 1984）。",
+    "Stackelberg 領導者利潤高於 Cournot，追隨者利潤低於 Cournot。",
+    "反應曲線斜率：Cournot 為 −γ/(2b)（策略替代）；差異化 Bertrand 為 +γ/(2b)（策略互補）。",
+    "勒納指數 Lerner index Lᵢ = (Pᵢ − cᵢ)/Pᵢ 衡量市場力量；同質 Cournot 中 Lᵢ = sᵢ/ε（市占除以需求彈性）。HHI = 10,000 × Σ sᵢ²。"
+  ];
+
+  const benchmarks = [
+    { cap: "完全競爭 Perfect competition（P = MC）", tex: R`P_i = c_i,\qquad \pi_i = 0`, text: "P_i = c_i，π_i = 0（同質時 P = min(c₁, c₂)）" },
+    { cap: "獨占 Monopoly：聯合利潤最大 Joint profit max（同質時由低成本廠商生產）", tex: R`Q^{M} = \frac{a - c_L}{2b},\qquad P^{M} = \frac{a + c_L}{2}`, text: "Q^M = (a − c_L) / (2b)，P^M = (a + c_L) / 2" },
+    { cap: "福利 Welfare", tex: R`CS = \tfrac{1}{2}\left(b\,q_1^2 + 2\gamma\,q_1q_2 + b\,q_2^2\right),\qquad SW = CS + \pi_1 + \pi_2`, text: "CS = ½(b·q₁² + 2γ·q₁q₂ + b·q₂²)，SW = CS + π₁ + π₂" },
+    { cap: "市場力量 Market power", tex: R`L_i = \frac{P_i - c_i}{P_i},\qquad HHI = 10{,}000 \times \textstyle\sum_i s_i^2`, text: "L_i = (P_i − c_i)/P_i，HHI = 10,000 × Σ s_i²" }
+  ];
+
+  return { get: (model, homo, leader = 1) => models[model](homo, leader), keyResults, benchmarks };
+})();
+
+/* =====================================================================
+ * UI — 建立畫面骨架、綁定事件、載入 CDN（唯一處理使用者輸入的地方）
+ * ===================================================================== */
+const UI = (() => {
+  const CDN = {
+    katexCss: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css",
+    katexJs: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js",
+    plotly: "https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"
+  };
+  const CDN_TIMEOUT_MS = 10000;
+  const esc = Render.esc;
+
+  function paramHTML(def) {
+    const dot = def.firm ? `<span class="dot f${def.firm}"></span>` : "";
+    return `<div class="param${def.firm ? ` firm${def.firm}` : ""}" data-key="${def.key}">
+      <div class="param-head">
+        <label for="num-${def.key}">${dot}<span class="sym">${def.sym}</span> ${esc(def.zh)} <span class="en">${esc(def.en)}</span></label>
+        <input type="number" id="num-${def.key}" inputmode="decimal" step="${def.step}">
+      </div>
+      <input type="range" id="rng-${def.key}" aria-label="${esc(def.zh)} ${def.sym}">
+      <div class="range-hint"><span class="min"></span><span class="max"></span></div>
+    </div>`;
+  }
+
+  function skeleton() {
+    return `
+    <header class="app-header">
+      <div>
+        <div class="sub" style="font-weight:600;margin-bottom:4px">台大 P11323026 經濟所碩專三 呂明權 雙頭寡占競爭模擬器 index.html</div>
+        <h1>雙頭寡占競爭模擬器</h1>
+        <div class="sub">Duopoly Competition Simulator · Cournot / Bertrand / Stackelberg</div>
+      </div>
+      <div class="presets" role="group" aria-label="預設情境 Presets">
+        <span class="lbl">預設情境 Presets</span>
+        ${PRESETS.map(p => `<button type="button" class="btn" data-preset="${p.id}" aria-pressed="false" title="${esc(p.en)}">${esc(p.zh)}</button>`).join("")}
+      </div>
+    </header>
+    <div id="cdn-banner" class="cdn-banner" role="status" hidden></div>
+    <div class="layout">
+      <aside class="controls card" id="controls" aria-label="參數設定 Parameters">
+        <button type="button" class="controls-toggle" id="controls-toggle" aria-expanded="true" aria-controls="controls-body">
+          <span>參數設定 Parameters</span><span aria-hidden="true">▾</span>
+        </button>
+        <div class="controls-body" id="controls-body">
+          <div class="ctl-group">
+            <p class="ctl-label">模型 Model</p>
+            <div class="seg" role="tablist" aria-label="模型 Model">
+              ${Object.entries(MODELS).map(([k, m]) =>
+                `<button type="button" role="tab" data-model="${k}" aria-selected="false">${esc(m.zh)}<small>${esc(m.en)}</small></button>`).join("")}
+            </div>
+          </div>
+          <div class="ctl-group" id="leader-group" hidden>
+            <p class="ctl-label">領導者 Leader（先行動的廠商）</p>
+            <div class="seg two" role="group" aria-label="領導者 Leader">
+              <button type="button" data-leader="1" aria-pressed="true"><span class="dot f1"></span>廠商 1<small>Firm 1 leads</small></button>
+              <button type="button" data-leader="2" aria-pressed="false"><span class="dot f2"></span>廠商 2<small>Firm 2 leads</small></button>
+            </div>
+          </div>
+          <div class="ctl-group">
+            <p class="ctl-label">產品型態 Product</p>
+            <div class="seg two" role="group" aria-label="產品型態 Product">
+              <button type="button" data-product="homo" aria-pressed="false">同質<small>Homogeneous θ = 1</small></button>
+              <button type="button" data-product="diff" aria-pressed="false">差異化<small>Differentiated</small></button>
+            </div>
+          </div>
+          <div class="ctl-group">
+            <p class="ctl-label">參數 Parameters</p>
+            ${PARAM_DEFS.map(paramHTML).join("")}
+          </div>
+        </div>
+      </aside>
+      <div class="main">
+        <div class="row1">
+          <section class="card" aria-labelledby="rc-title">
+            <div class="card-head">
+              <h2 id="rc-title">反應曲線</h2>
+              <button type="button" class="btn small" id="iso-toggle" aria-pressed="false">等利潤曲線 Isoprofit</button>
+            </div>
+            <div id="reaction-chart" class="chart"></div>
+            <p class="note" id="rc-note"></p>
+          </section>
+          <section class="card" aria-labelledby="results-title">
+            <h2 id="results-title">結果 Results</h2>
+            <div id="corner-banner" class="corner-banner" role="status" hidden></div>
+            <dl id="results" class="res-list"></dl>
+          </section>
+        </div>
+        <section class="card" aria-labelledby="cmp-title">
+          <div class="cmp-head">
+            <h2 id="cmp-title">市場結構比較 <span class="en">Comparison</span></h2>
+          </div>
+          <p class="note scroll-hint">左右滑動表格，查看全部 5 種市場結構 →</p>
+          <div class="table-wrap cmp-wrap" id="cmp-wrap"><table class="cmp" id="cmp-table"></table></div>
+          <div class="cmp-toggle" role="group" aria-label="圖表內容 Chart">
+            <button type="button" class="btn" data-view="welfare" aria-pressed="true">福利 Welfare</button>
+            <button type="button" class="btn" data-view="pq" aria-pressed="false">價格與產量 P &amp; Q</button>
+            <button type="button" class="btn" data-view="market" aria-pressed="false">市場圖 Market</button>
+          </div>
+          <div id="cmp-chart" class="chart bars"></div>
+          <p class="note" id="market-note" hidden></p>
+          <p class="note" id="cmp-chart-note" hidden>長條圖需要 Plotly，目前請以上方表格比較；市場圖仍可使用。</p>
+          <p class="note">藍底欄位為目前模型；完全競爭與獨占為對照基準。灰色數字表示該廠商產量為 0。</p>
+        </section>
+        <section class="card lessons" id="lessons" aria-labelledby="ls-title"></section>
+      </div>
+      <section class="card theory" aria-label="理論說明 Theory">
+        <details open>
+          <summary>理論說明 Theory</summary>
+          <div id="theory-body"></div>
+        </details>
+      </section>
+    </div>`;
+  }
+
+  function flash(el) {
+    el.classList.remove("invalid");
+    void el.offsetWidth;                        // 重新觸發動畫
+    el.classList.add("invalid");
+    clearTimeout(el._flashTimer);
+    el._flashTimer = setTimeout(() => el.classList.remove("invalid"), 1200);
+  }
+
+  function commitNumber(def, el) {
+    const raw = el.value.trim();
+    const v = Number(raw);
+    if (raw === "" || !Number.isFinite(v)) {     // 非數字：不重算，還原顯示
+      flash(el);
+      el.value = String(Math.round(getParam(def.key) * 1000) / 1000);
+      return;
+    }
+    const clamped = clampParam(def, v);
+    if (clamped !== v) flash(el);
+    el.value = String(Math.round(clamped * 1000) / 1000);
+    if (clamped !== getParam(def.key)) { setParam(def.key, clamped); Render.schedule(); }
+  }
+
+  function bind(root) {
+    for (const def of PARAM_DEFS) {
+      const rng = document.getElementById(`rng-${def.key}`);
+      const num = document.getElementById(`num-${def.key}`);
+      rng.addEventListener("input", () => { setParam(def.key, Number(rng.value)); Render.schedule(); });
+      num.addEventListener("change", () => commitNumber(def, num));
+      num.addEventListener("keydown", e => { if (e.key === "Enter") commitNumber(def, num); });
+    }
+    root.addEventListener("click", e => {
+      const t = e.target.closest("button");
+      if (!t || t.disabled) return;
+      if (t.dataset.model) { if (State.model !== t.dataset.model) { State.model = t.dataset.model; State.preset = null; State.animateNext = true; } }
+      else if (t.dataset.product) { if (State.product !== t.dataset.product) { State.product = t.dataset.product; State.preset = null; State.animateNext = true; } }
+      else if (t.dataset.leader) { const L = Number(t.dataset.leader); if (State.leader !== L) { State.leader = L; State.preset = null; State.animateNext = true; } }
+      else if (t.dataset.preset) applyPreset(t.dataset.preset);
+      else if (t.dataset.view) State.compareView = t.dataset.view;
+      else if (t.id === "iso-toggle") State.showIso = !State.showIso;
+      else if (t.id === "controls-toggle") State.controlsCollapsed = !State.controlsCollapsed;
+      else return;
+      Render.schedule();
+    });
+    // 模型分頁：左右方向鍵切換
+    root.querySelector('[role="tablist"]').addEventListener("keydown", e => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const keys = Object.keys(MODELS);
+      const i = keys.indexOf(State.model) + (e.key === "ArrowRight" ? 1 : -1);
+      State.model = keys[(i + keys.length) % keys.length];
+      State.preset = null; State.animateNext = true;
+      Render.render();
+      root.querySelector(`[data-model="${State.model}"]`).focus();
+    });
+    window.addEventListener("resize", () => Render.schedule());   // 手機轉向時重算比較表欄寬
+    if (window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      if (mq.addEventListener) mq.addEventListener("change", () => Render.schedule());
+    }
+  }
+
+  // 載入單一外部資源；逾時視為失敗，但若之後仍載入成功會再通知一次
+  function loadAsset(kind, url, onStatus) {
+    let settled = false;
+    const report = ok => { if (!settled || ok) { settled = true; onStatus(ok); } };
+    const el = kind === "css" ? document.createElement("link") : document.createElement("script");
+    if (kind === "css") { el.rel = "stylesheet"; el.href = url; } else { el.src = url; el.async = true; }
+    el.onload = () => report(true);
+    el.onerror = () => report(false);
+    setTimeout(() => { if (!settled) report(false); }, CDN_TIMEOUT_MS);
+    document.head.appendChild(el);
+  }
+
+  function loadLibraries() {
+    const parts = { css: null, js: null };
+    const updateKatex = () => {
+      if (parts.css === false || parts.js === false) State.cdn.katex = "fail";
+      else if (parts.css && parts.js) State.cdn.katex = typeof window.katex !== "undefined" ? "ok" : "fail";
+      Render.schedule();
+    };
+    loadAsset("css", CDN.katexCss, ok => { parts.css = ok; updateKatex(); });
+    loadAsset("js", CDN.katexJs, ok => { parts.js = ok; updateKatex(); });
+    loadAsset("js", CDN.plotly, ok => {
+      State.cdn.plotly = ok && typeof window.Plotly !== "undefined" ? "ok" : "fail";
+      Render.schedule();
+    });
+  }
+
+  function init(root) {
+    root.className = "app";
+    root.innerHTML = skeleton();
+    bind(root);
+    Lessons.mount(document.getElementById("lessons"));
+    Render.render();          // 先以純文字公式與簡化圖呈現，函式庫載入後自動升級
+    loadLibraries();
+  }
+
+  return { init, CDN };
+})();
+
+/* =====================================================================
+ * 啟動 Boot：?test=1 顯示自我測試報告，否則啟動介面
+ * ===================================================================== */
+if (typeof document !== "undefined") {
+  const app = document.getElementById("app");
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const fmt = x => (Number.isFinite(x) ? (+x.toFixed(4)).toLocaleString("en-US", { maximumFractionDigits: 4 }) : String(x));
+  const tag = ok => `<span class="tag ${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</span>`;
+  const params = new URLSearchParams(location.search);
+
+  if (params.get("test") === "1") {
+    const r = Tests.run();
+    const r3 = Tests3.run();                         // Phase 3 新增計算的測試
+    const r4 = Lessons.selfTest();                   // 動畫教學的資料層測試
+    const passed = r.passed + r3.passed + r4.passed, total = r.total + r3.total + r4.total;
+    const allOk = passed === total;
+    const specRows = r.spec.map(row => `
+      <tr>
+        <td>${tag(row.pass)}</td>
+        <td>${esc(row.label)}</td>
+        <td>${esc(row.model)}</td>
+        <td>${row.error ? `<span class="chk fail">錯誤：${esc(row.error.message)}</span>` :
+          row.checks.map(k => `<span class="chk ${k.pass ? "" : "fail"}">${esc(k.key)} ${fmt(k.actual)}${k.pass ? "" : `（應為 ${fmt(k.expected)}）`}</span>`).join("　")}</td>
+      </tr>`).join("");
+    const simpleRows = rows => rows.map(row => `
+      <tr><td>${tag(row.pass)}</td><td>${esc(row.label)}</td><td>${esc(row.detail)}</td></tr>`).join("");
+
+    app.innerHTML = `
+      <h1>自我測試 Self-test</h1>
+      <div class="muted">容差 Tolerance ±${Tests.TOL}；預期值見規格書第 9.1 節</div>
+      <div class="summary ${allOk ? "ok" : "bad"}">
+        第 9.1 節：${r.specPassed} / ${r.specTotal} pass　｜　Phase 3 新增：${r3.passed} / ${r3.total} pass　｜　動畫教學：${r4.passed} / ${r4.total} pass　｜　全部檢查：${passed} / ${total} pass
+      </div>
+
+      <h2>第 9.1 節數值案例 Spec test cases（a = 100、b = 1）</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>案例</th><th>模型</th><th>實際值（失敗時附預期值）</th></tr></thead>
+        <tbody>${specRows}</tbody>
+      </table></div>
+
+      <h2>額外 1：極端值掃描 Extreme values（θ 0–1、兩種 Leader、5 種市場結構）</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>參數</th><th>說明</th></tr></thead>
+        <tbody>${simpleRows(r.sweep)}</tbody>
+      </table></div>
+
+      <h2>額外 2：Stackelberg 封閉解 vs 數值解 Analytic vs numeric</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>範圍</th><th>說明</th></tr></thead>
+        <tbody>${simpleRows(r.agree)}</tbody>
+      </table></div>
+
+      <h2>額外 3：理論結論 Theory checks</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>檢查</th><th>數值</th></tr></thead>
+        <tbody>${simpleRows(r.order)}</tbody>
+      </table></div>
+
+      <h2>Phase 3 新增計算 New calculations（F12 代入算式、F15 市場圖、F16 等利潤曲線、F17 Lerner / HHI）</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>功能</th><th>檢查</th><th>說明</th></tr></thead>
+        <tbody>${r3.rows.map(row => `
+          <tr><td>${tag(row.pass)}</td><td>${esc(row.group)}</td><td>${esc(row.label)}</td><td>${esc(row.detail)}</td></tr>`).join("")}</tbody>
+      </table></div>
+
+      <h2>動畫教學 Animated lessons（資料層）</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>結果</th><th>功能</th><th>檢查</th><th>說明</th></tr></thead>
+        <tbody>${r4.rows.map(row => `
+          <tr><td>${tag(row.pass)}</td><td>${esc(row.group)}</td><td>${esc(row.label)}</td><td>${esc(row.detail)}</td></tr>`).join("")}</tbody>
+      </table></div>`;
+    document.title = `${allOk ? "✅" : "❌"} ${passed}/${total} — Self-test`;
+  } else {
+    UI.init(app);                       // 正式介面
+  }
+}
+
+/* Node 測試用：node 環境下匯出 */
+if (typeof module !== "undefined" && module.exports) module.exports = { Econ, Tests, Tests3, Subst, Iso, Market, Lessons };
+</script>
+</body>
+</html>
