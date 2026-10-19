@@ -1,6 +1,6 @@
 # duopoly-simulator
-台大 P11323026 經濟所碩專三 呂明權 雙頭寡占競爭模擬器
-# 台大 P11323026 經濟所碩專三 呂明權 雙頭寡占競爭模擬器
+Wwwk 5  雙頭寡占競爭模擬器
+# Week 5 雙頭寡占競爭模擬器
 
 雙頭寡占競爭模擬器 Duopoly Competition Simulator：單一 `index.html`，可在瀏覽器直接操作，不需安裝。
 
